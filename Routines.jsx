@@ -5,11 +5,26 @@ const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0]; // Mon-first display order
 
 function emptyRoutine() {
   return {
-    id: uid(), title: '', days: [0,1,2,3,4,5,6], // all days by default
-    timeOfDay: 'anytime', // morning / afternoon / evening / anytime
-    streak: 0, lastCompletedDate: null,
-    completions: {}, // { 'YYYY-MM-DD': true }
+    id: uid(), title: '', days: [0,1,2,3,4,5,6],
+    timeOfDay: 'anytime', weekly: false,
+    completions: {},
   };
+}
+
+function getMondayOf(date) {
+  const d = new Date(date); d.setHours(0, 0, 0, 0);
+  const day = d.getDay();
+  d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day));
+  return d;
+}
+
+function hasCompletionInWeek(completions, monday) {
+  if (!completions) return false;
+  const sun = new Date(monday); sun.setDate(sun.getDate() + 7);
+  return Object.keys(completions).some(k => {
+    const d = new Date(k + 'T00:00:00');
+    return d >= monday && d < sun;
+  });
 }
 
 function RoutineModal({ routine, onSave, onClose }) {
@@ -59,8 +74,28 @@ function RoutineModal({ routine, onSave, onClose }) {
               placeholder="e.g. Morning stretch…" />
           </div>
 
-          {/* Day picker */}
+          {/* Frequency */}
           <div>
+            <span style={labelStyle}>Frequency</span>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {[['daily', 'Daily'], ['weekly', 'Weekly — any day']].map(([val, label]) => {
+                const active = val === 'weekly' ? !!form.weekly : !form.weekly;
+                return (
+                  <button key={val} onClick={() => setForm(f => ({ ...f, weekly: val === 'weekly' }))} style={{
+                    flex: 1, padding: '8px 0', borderRadius: 8, fontSize: 11, fontWeight: 600,
+                    cursor: 'pointer', border: '1px solid', textTransform: 'none',
+                    background: active ? 'var(--fg)' : 'transparent',
+                    color: active ? 'var(--bg)' : 'var(--fg-muted)',
+                    borderColor: active ? 'var(--fg)' : 'var(--border)',
+                    transition: 'all 0.15s',
+                  }}>{label}</button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Day picker — hidden for weekly */}
+          {!form.weekly && <div>
             <span style={labelStyle}>Repeat on</span>
             <div style={{ display: 'flex', gap: 6, justifyContent: 'space-between' }}>
               {WEEK_ORDER.map(i => (
@@ -76,7 +111,7 @@ function RoutineModal({ routine, onSave, onClose }) {
                 </button>
               ))}
             </div>
-          </div>
+          </div>}
 
           {/* Time of day */}
           <div>
@@ -113,28 +148,35 @@ function RoutineModal({ routine, onSave, onClose }) {
 
 function RoutineRow({ routine, onToggleToday, onEdit, onDelete }) {
   const todayKey = today();
-  const completedToday = !!(routine.completions && routine.completions[todayKey]);
   const todayDayIdx = currentDayIndex();
-  const isScheduledToday = routine.days.includes(todayDayIdx);
+  const thisMonday = getMondayOf(new Date());
 
-  // Calculate streak
+  const isWeekly = !!routine.weekly;
+  const completedThisWeek = isWeekly && hasCompletionInWeek(routine.completions, thisMonday);
+  const completedToday = !isWeekly && !!(routine.completions && routine.completions[todayKey]);
+  const isScheduledToday = isWeekly ? true : routine.days.includes(todayDayIdx);
+  const isDone = isWeekly ? completedThisWeek : completedToday;
+
   function calcStreak() {
     let streak = 0;
-    const d = new Date();
-    while (true) {
-      const key = d.toISOString().slice(0, 10);
-      const dayIdx = d.getDay();
-      if (!routine.days.includes(dayIdx)) {
-        d.setDate(d.getDate() - 1);
-        continue;
+    if (isWeekly) {
+      const d = new Date();
+      if (!completedThisWeek) d.setDate(d.getDate() - 7);
+      for (let i = 0; i < 52; i++) {
+        const mon = getMondayOf(d);
+        if (hasCompletionInWeek(routine.completions, mon)) { streak++; d.setDate(d.getDate() - 7); }
+        else break;
       }
-      if (routine.completions && routine.completions[key]) {
-        streak++;
-        d.setDate(d.getDate() - 1);
-      } else {
-        break;
+    } else {
+      const d = new Date();
+      while (true) {
+        const key = d.toISOString().slice(0, 10);
+        const dayIdx = d.getDay();
+        if (!routine.days.includes(dayIdx)) { d.setDate(d.getDate() - 1); continue; }
+        if (routine.completions && routine.completions[key]) { streak++; d.setDate(d.getDate() - 1); }
+        else break;
+        if (streak > 365) break;
       }
-      if (streak > 365) break;
     }
     return streak;
   }
@@ -146,40 +188,45 @@ function RoutineRow({ routine, onToggleToday, onEdit, onDelete }) {
     <div style={{
       display: 'flex', alignItems: 'center', gap: 12,
       padding: '14px 0', borderBottom: '1px solid var(--border)',
-      opacity: (!isScheduledToday && !completedToday) ? 0.4 : 1,
+      opacity: (!isScheduledToday && !isDone) ? 0.4 : 1,
     }}>
       {/* Check circle */}
       <button onClick={() => isScheduledToday && onToggleToday(routine.id)} style={{
         width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
         border: '1.5px solid', cursor: isScheduledToday ? 'pointer' : 'default',
-        background: completedToday ? 'var(--fg)' : 'transparent',
-        borderColor: completedToday ? 'var(--fg)' : 'var(--border)',
+        background: isDone ? 'var(--fg)' : 'transparent',
+        borderColor: isDone ? 'var(--fg)' : 'var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'all 0.2s',
       }}>
-        {completedToday && <span style={{ color: 'var(--bg)', fontSize: 14 }}>✓</span>}
+        {isDone && <span style={{ color: 'var(--bg)', fontSize: 14 }}>✓</span>}
       </button>
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 15, fontWeight: 500, marginBottom: 3 }}>{routine.title}</div>
-        {/* Day dots */}
-        <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
-          {WEEK_ORDER.map(i => (
-            <span key={i} style={{
-              width: 18, height: 18, borderRadius: 4, fontSize: 9, fontWeight: 700,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: routine.days.includes(i)
-                ? (i === todayDayIdx ? 'var(--fg)' : 'var(--border)')
-                : 'transparent',
-              color: routine.days.includes(i)
-                ? (i === todayDayIdx ? 'var(--bg)' : 'var(--fg-muted)')
-                : 'var(--border)',
-            }}>{DAY_NAMES[i].slice(0,1)}</span>
-          ))}
-          <span style={{ marginLeft: 4, fontSize: 11, color: 'var(--fg-muted)' }}>
-            {TIME_ICONS[routine.timeOfDay]} {routine.timeOfDay}
-          </span>
-        </div>
+        {isWeekly ? (
+          <div style={{ fontSize: 11, color: 'var(--fg-muted)' }}>
+            weekly · any day · {TIME_ICONS[routine.timeOfDay]} {routine.timeOfDay}
+          </div>
+        ) : (
+          <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+            {WEEK_ORDER.map(i => (
+              <span key={i} style={{
+                width: 18, height: 18, borderRadius: 4, fontSize: 9, fontWeight: 700,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: routine.days.includes(i)
+                  ? (i === todayDayIdx ? 'var(--fg)' : 'var(--border)')
+                  : 'transparent',
+                color: routine.days.includes(i)
+                  ? (i === todayDayIdx ? 'var(--bg)' : 'var(--fg-muted)')
+                  : 'var(--border)',
+              }}>{DAY_NAMES[i].slice(0,1)}</span>
+            ))}
+            <span style={{ marginLeft: 4, fontSize: 11, color: 'var(--fg-muted)' }}>
+              {TIME_ICONS[routine.timeOfDay]} {routine.timeOfDay}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Streak */}
@@ -228,10 +275,13 @@ function Routines() {
   function handleDelete(id) { setItems(prev => prev.filter(r => r.id !== id)); }
 
   const todayDayIdx = currentDayIndex();
-  const todayRoutines = items.filter(r => r.days.includes(todayDayIdx));
-  const otherRoutines = items.filter(r => !r.days.includes(todayDayIdx));
+  const thisMonday  = getMondayOf(new Date());
+  const todayRoutines = items.filter(r => r.weekly || r.days.includes(todayDayIdx));
+  const otherRoutines = items.filter(r => !r.weekly && !r.days.includes(todayDayIdx));
 
-  const doneToday = todayRoutines.filter(r => r.completions && r.completions[today()]).length;
+  const doneToday = todayRoutines.filter(r =>
+    r.weekly ? hasCompletionInWeek(r.completions, thisMonday) : r.completions && r.completions[today()]
+  ).length;
 
   return (
     <div style={{ padding: '16px 16px 40px' }}>
