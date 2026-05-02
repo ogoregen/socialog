@@ -332,9 +332,9 @@ function TodoRow({ item, allCats, onToggle, onDelete, onCycleCategory, onSetDueD
     <div
       style={{
         display: 'flex', alignItems: 'center', gap: 12,
-        padding: '16px 0',
-        borderBottom: '1px solid var(--border)',
-        opacity: item.done ? 0.35 : 1,
+        padding: '12px 14px', marginBottom: 8,
+        background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14,
+        opacity: item.done ? 0.5 : 1,
         transform: pressed ? 'scale(0.99)' : 'scale(1)',
         transition: 'transform 0.1s, opacity 0.2s',
       }}
@@ -344,10 +344,10 @@ function TodoRow({ item, allCats, onToggle, onDelete, onCycleCategory, onSetDueD
     >
       {/* Checkbox */}
       <button onClick={() => onToggle(item.id)} style={{
-        width: 22, height: 22, borderRadius: 6, flexShrink: 0,
+        width: 24, height: 24, borderRadius: 7, flexShrink: 0,
         border: '1.5px solid', cursor: 'pointer',
-        background: item.done ? (color || 'var(--fg)') : 'transparent',
-        borderColor: item.done ? (color || 'var(--fg)') : (color || 'var(--border)'),
+        background: item.done ? (color || '#22c55e') : 'transparent',
+        borderColor: item.done ? (color || '#22c55e') : (color || 'var(--border)'),
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'all 0.15s',
       }}>
