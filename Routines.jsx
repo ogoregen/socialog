@@ -233,9 +233,9 @@ function RoutineRow({ routine, onToggleToday, onEdit, onDelete }) {
       )}
 
       {/* Edit / delete */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0 }}>
-        <button onClick={() => onEdit(routine)} style={{ background: 'none', border: 'none', fontSize: 12, color: 'var(--fg-muted)', cursor: 'pointer', padding: '2px 4px' }}>Edit</button>
-        <button onClick={() => onDelete(routine.id)} style={{ background: 'none', border: 'none', fontSize: 12, color: 'var(--fg-muted)', cursor: 'pointer', padding: '2px 4px' }}>Del</button>
+      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+        <button onClick={() => onEdit(routine)} style={{ background: 'var(--border)', border: 'none', borderRadius: 8, fontSize: 11, color: 'var(--fg-muted)', cursor: 'pointer', width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
+        <button onClick={() => onDelete(routine.id)} style={{ background: 'var(--border)', border: 'none', borderRadius: 8, fontSize: 14, color: 'var(--fg-muted)', cursor: 'pointer', width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
       </div>
     </div>
   );

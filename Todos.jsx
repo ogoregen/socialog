@@ -131,38 +131,36 @@ function Todos() {
             fontSize: 14, color: 'var(--fg)', fontFamily: 'inherit',
           }}
         />
-        {/* Category + due date */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          <button onClick={() => setAddCat(nextCat(addCat))} style={{
-            height: 30, borderRadius: 8, flexShrink: 0, padding: '0 10px', cursor: 'pointer',
-            background: addColor || 'var(--border)', border: 'none',
-            display: 'flex', alignItems: 'center', gap: 6,
-          }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', display: 'block', flexShrink: 0,
-              background: addColor ? 'rgba(255,255,255,0.8)' : 'var(--fg-muted)', opacity: addColor ? 1 : 0.5 }} />
-            <span style={{ fontSize: 11, color: addColor ? 'rgba(255,255,255,0.9)' : 'var(--fg-muted)',
-              whiteSpace: 'nowrap', opacity: addColor ? 1 : 0.6 }}>
-              {addCat ? CATEGORIES.find(c => c.id === addCat)?.label : 'category'}
-            </span>
-          </button>
-          <div style={{ position: 'relative', height: 30, minWidth: 30, flexShrink: 0,
-            background: 'var(--border)', borderRadius: 8, padding: addDue ? '0 6px 0 10px' : '0 10px',
-            display: 'flex', alignItems: 'center', gap: 5 }}>
-            <span style={{
-              fontSize: 11, pointerEvents: 'none', whiteSpace: 'nowrap',
-              color: 'var(--fg-muted)', opacity: addDue ? 1 : 0.6,
-            }}>{addDueFmt ? addDueFmt.label : '◷'}</span>
-            {addDue && (
-              <button onClick={e => { e.stopPropagation(); setAddDue(null); }} style={{
-                position: 'relative', zIndex: 1, background: 'rgba(0,0,0,0.12)', border: 'none',
-                borderRadius: 4, width: 18, height: 18, fontSize: 13, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'var(--fg-muted)', padding: 0, flexShrink: 0,
-              }}>×</button>
-            )}
-            <input type="date" value={addDue || ''} onChange={e => setAddDue(e.target.value || null)}
-              style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
-          </div>
+        {/* Category */}
+        <button onClick={() => setAddCat(nextCat(addCat))} style={{
+          height: 30, borderRadius: 8, flexShrink: 0, padding: '0 10px', cursor: 'pointer',
+          background: addColor || 'var(--border)', border: 'none',
+          display: 'flex', alignItems: 'center', gap: 6,
+        }}>
+          <span style={{ width: 7, height: 7, borderRadius: '50%', display: 'block', flexShrink: 0,
+            background: addColor ? 'rgba(255,255,255,0.8)' : 'var(--fg-muted)', opacity: addColor ? 1 : 0.5 }} />
+          <span style={{ fontSize: 11, color: addColor ? 'rgba(255,255,255,0.9)' : 'var(--fg-muted)',
+            whiteSpace: 'nowrap', opacity: addColor ? 1 : 0.6 }}>
+            {addCat ? CATEGORIES.find(c => c.id === addCat)?.label : 'category'}
+          </span>
+        </button>
+        {/* Due date */}
+        <div style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center',
+          padding: addDue ? '5px 6px 5px 10px' : '5px 10px',
+          borderRadius: 20, gap: 5, ...duePillStyle(addDueFmt) }}>
+          <span style={{
+            fontSize: 11, fontWeight: 600, pointerEvents: 'none', whiteSpace: 'nowrap',
+          }}>{addDueFmt ? addDueFmt.label : '◷'}</span>
+          {addDue && (
+            <button onClick={e => { e.stopPropagation(); setAddDue(null); }} style={{
+              position: 'relative', zIndex: 1, background: 'rgba(0,0,0,0.12)', border: 'none',
+              borderRadius: 4, width: 18, height: 18, fontSize: 13, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'inherit', padding: 0, flexShrink: 0,
+            }}>×</button>
+          )}
+          <input type="date" value={addDue || ''} onChange={e => setAddDue(e.target.value || null)}
+            style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
         </div>
         <button onClick={addTodo} style={{
           background: 'var(--fg)', color: 'var(--bg)', border: 'none',

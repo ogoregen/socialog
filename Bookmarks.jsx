@@ -393,9 +393,9 @@ function BookmarkCard({ bm, onEdit, onDelete }) {
         {STATUS_LABELS[bm.status]}
       </span>
 
-      <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-        <button onClick={() => onEdit(bm)} style={{ background: 'none', border: 'none', fontSize: 12, color: 'var(--fg-muted)', cursor: 'pointer', padding: '2px 4px' }}>Edit</button>
-        <button onClick={() => onDelete(bm.id)} style={{ background: 'none', border: 'none', fontSize: 12, color: 'var(--fg-muted)', cursor: 'pointer', padding: '2px 4px' }}>×</button>
+      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+        <button onClick={() => onEdit(bm)} style={{ background: 'var(--border)', border: 'none', borderRadius: 8, fontSize: 11, color: 'var(--fg-muted)', cursor: 'pointer', width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
+        <button onClick={() => onDelete(bm.id)} style={{ background: 'var(--border)', border: 'none', borderRadius: 8, fontSize: 14, color: 'var(--fg-muted)', cursor: 'pointer', width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
       </div>
     </div>
   );
