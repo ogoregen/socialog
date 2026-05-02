@@ -208,7 +208,7 @@ function QuickAdd({ onAdd }) {
       background: 'var(--surface)', border: '1px solid var(--border)',
       borderRadius: 14, padding: '10px 12px', marginBottom: 20,
     }}>
-      <span style={{ color: 'var(--fg-muted)', fontSize: 14, flexShrink: 0 }}>★</span>
+      <span style={{ color: 'var(--fg-muted)', fontSize: 14, flexShrink: 0, width: 16, textAlign: 'center', display: 'inline-block' }}>★</span>
       <input
         ref={inputRef}
         value={url}

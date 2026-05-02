@@ -119,7 +119,7 @@ function Todos() {
         background: 'var(--surface)', border: '1px solid var(--border)',
         borderRadius: 14, padding: '10px 12px', marginBottom: 20,
       }}>
-        <span style={{ color: 'var(--fg-muted)', fontSize: 14, flexShrink: 0 }}>✓</span>
+        <span style={{ color: 'var(--fg-muted)', fontSize: 14, flexShrink: 0, width: 16, textAlign: 'center', display: 'inline-block' }}>✓</span>
         <input
           ref={inputRef}
           value={input}
@@ -289,39 +289,43 @@ function TodoRow({ item, onToggle, onDelete, onCycleCategory, onSetDueDate }) {
       </div>
 
       {/* Due date pill — tap to pick, × to clear */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
-        <div style={{ position: 'relative', minHeight: 30, display: 'flex', alignItems: 'center' }}>
-          <span style={{
-            display: 'block', padding: '5px 10px', borderRadius: 20,
-            fontSize: 11, fontWeight: 600, pointerEvents: 'none', whiteSpace: 'nowrap',
-            ...pillStyle,
-          }}>{dueFmt ? dueFmt.label : '◷'}</span>
-          <input type="date" value={item.dueDate || ''} onChange={e => onSetDueDate(item.id, e.target.value || null)}
-            style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
-        </div>
+      <div style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center',
+        padding: item.dueDate ? '5px 6px 5px 10px' : '5px 10px',
+        borderRadius: 20, gap: 5, ...pillStyle }}>
+        <span style={{
+          fontSize: 11, fontWeight: 600, pointerEvents: 'none', whiteSpace: 'nowrap',
+        }}>{dueFmt ? dueFmt.label : '◷'}</span>
         {item.dueDate && (
           <button onClick={e => { e.stopPropagation(); onSetDueDate(item.id, null); }} style={{
-            background: 'none', border: 'none', color: 'var(--fg-muted)',
-            cursor: 'pointer', opacity: 0.5, flexShrink: 0,
-            width: 30, height: 30, fontSize: 16,
+            position: 'relative', zIndex: 1, background: 'rgba(0,0,0,0.12)', border: 'none',
+            borderRadius: 4, width: 18, height: 18, fontSize: 13, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'inherit', padding: 0, flexShrink: 0,
           }}>×</button>
         )}
+        <input type="date" value={item.dueDate || ''} onChange={e => onSetDueDate(item.id, e.target.value || null)}
+          style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
       </div>
 
-      {/* Category dot */}
+      {/* Category button */}
       <button onClick={() => onCycleCategory(item.id)} style={{
-        width: 30, height: 30, borderRadius: 8, flexShrink: 0, padding: 0,
-        background: color || 'transparent',
-        border: `1.5px solid ${color || 'var(--border)'}`,
+        height: 30, borderRadius: 8, flexShrink: 0, padding: '0 10px',
+        background: color || 'var(--border)', border: 'none',
         cursor: 'pointer', opacity: color ? 1 : 0.35,
-      }} />
+        display: 'flex', alignItems: 'center', gap: 5,
+      }}>
+        <span style={{ width: 7, height: 7, borderRadius: '50%', display: 'block', flexShrink: 0,
+          background: color ? 'rgba(255,255,255,0.8)' : 'var(--fg-muted)' }} />
+        <span style={{ fontSize: 11, color: color ? 'rgba(255,255,255,0.9)' : 'var(--fg-muted)', whiteSpace: 'nowrap' }}>
+          {item.category ? CATEGORIES.find(c => c.id === item.category)?.label : 'category'}
+        </span>
+      </button>
 
       {/* Delete */}
       <button onClick={() => onDelete(item.id)} style={{
-        background: 'none', border: 'none', color: 'var(--fg-muted)',
-        fontSize: 18, cursor: 'pointer', opacity: 0.5, flexShrink: 0,
-        width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'var(--border)', border: 'none', color: 'var(--fg-muted)',
+        fontSize: 14, cursor: 'pointer', flexShrink: 0, borderRadius: 8,
+        width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>×</button>
     </div>
   );
