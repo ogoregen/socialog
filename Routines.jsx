@@ -271,12 +271,15 @@ function Routines() {
 
   const todayDayIdx = currentDayIndex();
   const thisMonday  = getMondayOf(new Date());
+  const todayKey    = today();
   const todayRoutines = items.filter(r => r.weekly || r.days.includes(todayDayIdx));
   const otherRoutines = items.filter(r => !r.weekly && !r.days.includes(todayDayIdx));
 
-  const doneToday = todayRoutines.filter(r =>
-    r.weekly ? hasCompletionInWeek(r.completions, thisMonday) : r.completions && r.completions[today()]
-  ).length;
+  const dailyRoutines  = todayRoutines.filter(r => !r.weekly);
+  const weeklyRoutines = todayRoutines.filter(r => r.weekly);
+  const doneDaily  = dailyRoutines.filter(r => r.completions && r.completions[todayKey]).length;
+  const doneWeekly = weeklyRoutines.filter(r => hasCompletionInWeek(r.completions, thisMonday)).length;
+  const doneToday  = doneDaily + doneWeekly;
 
   return (
     <div style={{ padding: '16px 16px 40px' }}>
@@ -306,24 +309,33 @@ function Routines() {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <div>
-            <div style={{ fontSize: 13, color: 'var(--fg-muted)', marginBottom: 2 }}>
+            <div style={{ fontSize: 13, color: 'var(--fg-muted)', marginBottom: 6 }}>
               {DAY_NAMES[todayDayIdx]}, {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
             </div>
-            <div style={{ fontSize: 20, fontWeight: 700 }}>
-              {doneToday}/{todayRoutines.length}
+            <div style={{ display: 'flex', gap: 14, alignItems: 'baseline' }}>
+              {dailyRoutines.length > 0 && (
+                <div>
+                  <span style={{ fontSize: 20, fontWeight: 700 }}>{doneDaily}/{dailyRoutines.length}</span>
+                  <span style={{ fontSize: 11, color: 'var(--fg-muted)', marginLeft: 4 }}>daily</span>
+                </div>
+              )}
+              {weeklyRoutines.length > 0 && (
+                <div>
+                  <span style={{ fontSize: 20, fontWeight: 700 }}>{doneWeekly}/{weeklyRoutines.length}</span>
+                  <span style={{ fontSize: 11, color: 'var(--fg-muted)', marginLeft: 4 }}>weekly</span>
+                </div>
+              )}
             </div>
           </div>
           {/* Mini progress arc via SVG */}
           <svg width="48" height="48" viewBox="0 0 48 48">
             <circle cx="24" cy="24" r="20" fill="none" stroke="var(--border)" strokeWidth="3" />
-            {todayRoutines.length > 0 && (
-              <circle cx="24" cy="24" r="20" fill="none" stroke="var(--fg)" strokeWidth="3"
-                strokeDasharray={`${(doneToday / todayRoutines.length) * 125.6} 125.6`}
-                strokeLinecap="round" transform="rotate(-90 24 24)" style={{ transition: 'stroke-dasharray 0.4s' }}
-              />
-            )}
+            <circle cx="24" cy="24" r="20" fill="none" stroke="var(--fg)" strokeWidth="3"
+              strokeDasharray={`${(doneToday / todayRoutines.length) * 125.6} 125.6`}
+              strokeLinecap="round" transform="rotate(-90 24 24)" style={{ transition: 'stroke-dasharray 0.4s' }}
+            />
             <text x="24" y="28" textAnchor="middle" fontSize="11" fontWeight="700" fill="var(--fg)">
-              {todayRoutines.length > 0 ? Math.round((doneToday / todayRoutines.length) * 100) + '%' : '—'}
+              {Math.round((doneToday / todayRoutines.length) * 100)}%
             </text>
           </svg>
         </div>
