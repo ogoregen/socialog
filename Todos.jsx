@@ -1,6 +1,6 @@
 // Todos component — simple, clean checklist
 
-const CATEGORIES = [
+const BUILT_IN_CATEGORIES = [
   { id: 'work',     label: 'Work',     color: '#3b82f6' },
   { id: 'personal', label: 'Personal', color: '#a855f7' },
   { id: 'health',   label: 'Health',   color: '#22c55e' },
@@ -8,15 +8,17 @@ const CATEGORIES = [
   { id: 'other',    label: 'Other',    color: '#ec4899' },
 ];
 
-function catColor(id) {
-  return CATEGORIES.find(c => c.id === id)?.color ?? null;
+const CAT_PALETTE = ['#ef4444','#f97316','#eab308','#22c55e','#06b6d4','#3b82f6','#8b5cf6','#ec4899','#14b8a6','#f43f5e'];
+
+function catColor(id, cats) {
+  return cats.find(c => c.id === id)?.color ?? null;
 }
 
-function nextCat(id) {
-  const idx = CATEGORIES.findIndex(c => c.id === id);
-  if (idx === -1) return CATEGORIES[0].id;
-  if (idx === CATEGORIES.length - 1) return null;
-  return CATEGORIES[idx + 1].id;
+function nextCat(id, cats) {
+  const idx = cats.findIndex(c => c.id === id);
+  if (idx === -1) return cats[0]?.id ?? null;
+  if (idx === cats.length - 1) return null;
+  return cats[idx + 1].id;
 }
 
 function formatDueDate(iso) {
@@ -62,14 +64,38 @@ function getBucket(iso) {
 }
 
 function Todos() {
-  const [items, setItems]         = React.useState(() => load('todos') || []);
-  const [input, setInput]         = React.useState('');
-  const [addCat, setAddCat]       = React.useState(null);
-  const [addDue, setAddDue]       = React.useState(null);
-  const [catFilter, setCatFilter] = React.useState(null);
+  const [items, setItems]           = React.useState(() => load('todos') || []);
+  const [customCats, setCustomCats] = React.useState(() => load('categories') || []);
+  const [input, setInput]           = React.useState('');
+  const [addCat, setAddCat]         = React.useState(null);
+  const [addDue, setAddDue]         = React.useState(null);
+  const [catFilter, setCatFilter]   = React.useState(null);
+  const [addingCat, setAddingCat]   = React.useState(false);
+  const [newCatName, setNewCatName] = React.useState('');
+  const [newCatColor, setNewCatColor] = React.useState(CAT_PALETTE[0]);
   const inputRef = React.useRef();
+  const newCatRef = React.useRef();
+
+  const allCats = React.useMemo(() => [...BUILT_IN_CATEGORIES, ...customCats], [customCats]);
 
   React.useEffect(() => { save('todos', items); }, [items]);
+  React.useEffect(() => { save('categories', customCats); }, [customCats]);
+
+  function saveNewCat() {
+    const label = newCatName.trim();
+    if (!label) return;
+    const id = 'custom_' + uid();
+    const usedColors = allCats.map(c => c.color);
+    const color = newCatColor || CAT_PALETTE.find(p => !usedColors.includes(p)) || CAT_PALETTE[customCats.length % CAT_PALETTE.length];
+    setCustomCats(prev => [...prev, { id, label, color, custom: true }]);
+    setNewCatName('');
+    setNewCatColor(CAT_PALETTE[(customCats.length + 1) % CAT_PALETTE.length]);
+    setAddingCat(false);
+  }
+
+  function deleteCustomCat(id) {
+    setCustomCats(prev => prev.filter(c => c.id !== id));
+  }
 
   function addTodo() {
     const text = input.trim();
@@ -85,7 +111,7 @@ function Todos() {
   }
 
   function cycleCategory(id) {
-    setItems(prev => prev.map(t => t.id === id ? { ...t, category: nextCat(t.category) } : t));
+    setItems(prev => prev.map(t => t.id === id ? { ...t, category: nextCat(t.category, allCats) } : t));
   }
 
   function setDueDate(id, date) {
@@ -106,9 +132,9 @@ function Todos() {
   const shownActive = catFilter ? active.filter(t => t.category === catFilter) : active;
   const shownDone   = catFilter ? done.filter(t => t.category === catFilter) : done;
 
-  const usedCats = CATEGORIES.filter(c => items.some(t => t.category === c.id));
+  const usedCats = allCats.filter(c => items.some(t => t.category === c.id));
 
-  const addColor = catColor(addCat);
+  const addColor = catColor(addCat, allCats);
   const addDueFmt = formatDueDate(addDue);
 
   return (
@@ -132,7 +158,7 @@ function Todos() {
           }}
         />
         {/* Category */}
-        <button onClick={() => setAddCat(nextCat(addCat))} style={{
+        <button onClick={() => setAddCat(nextCat(addCat, allCats))} style={{
           height: 30, borderRadius: 8, flexShrink: 0, padding: '0 10px', cursor: 'pointer',
           background: addColor || 'var(--border)', border: 'none',
           display: 'flex', alignItems: 'center', gap: 6,
@@ -141,7 +167,7 @@ function Todos() {
             background: addColor ? 'rgba(255,255,255,0.8)' : 'var(--fg-muted)', opacity: addColor ? 1 : 0.5 }} />
           <span style={{ fontSize: 11, color: addColor ? 'rgba(255,255,255,0.9)' : 'var(--fg-muted)',
             whiteSpace: 'nowrap', opacity: addColor ? 1 : 0.6 }}>
-            {addCat ? CATEGORIES.find(c => c.id === addCat)?.label : 'category'}
+            {addCat ? allCats.find(c => c.id === addCat)?.label : 'category'}
           </span>
         </button>
         {/* Due date */}
@@ -169,22 +195,24 @@ function Todos() {
         }}>+</button>
       </div>
 
-      {/* Category filter pills */}
-      {usedCats.length > 0 && (
-        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 20 }}>
-          {[null, ...usedCats].map(c => {
-            const isAll = c === null;
-            const active = catFilter === (isAll ? null : c.id);
-            const cc = isAll ? null : c.color;
-            return (
-              <button key={isAll ? 'all' : c.id} onClick={() => setCatFilter(isAll ? null : c.id)} style={{
+      {/* Category filter pills + new category */}
+      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: addingCat ? 10 : 20, flexWrap: 'nowrap' }}>
+        {usedCats.length > 0 && [null, ...usedCats].map(c => {
+          const isAll = c === null;
+          const active = catFilter === (isAll ? null : c.id);
+          const cc = isAll ? null : c.color;
+          return (
+            <div key={isAll ? 'all' : c.id} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+              <button onClick={() => setCatFilter(isAll ? null : c.id)} style={{
                 padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500,
-                cursor: 'pointer', border: '1px solid', whiteSpace: 'nowrap', flexShrink: 0,
+                cursor: 'pointer', border: '1px solid', whiteSpace: 'nowrap',
                 display: 'flex', alignItems: 'center', gap: 5,
                 background: active ? (cc || 'var(--fg)') : 'transparent',
                 color: active ? '#fff' : 'var(--fg-muted)',
                 borderColor: active ? (cc || 'var(--fg)') : 'var(--border)',
                 transition: 'all 0.15s',
+                borderTopRightRadius: (!isAll && c.custom) ? 0 : 20,
+                borderBottomRightRadius: (!isAll && c.custom) ? 0 : 20,
               }}>
                 {!isAll && <span style={{
                   width: 6, height: 6, borderRadius: '50%', flexShrink: 0, display: 'inline-block',
@@ -192,8 +220,57 @@ function Todos() {
                 }} />}
                 {isAll ? 'All' : c.label}
               </button>
-            );
-          })}
+              {!isAll && c.custom && (
+                <button onClick={() => deleteCustomCat(c.id)} style={{
+                  padding: '4px 7px 4px 5px', borderRadius: '0 20px 20px 0', fontSize: 11,
+                  cursor: 'pointer', border: '1px solid', borderLeft: 'none',
+                  background: active ? (cc || 'var(--fg)') : 'transparent',
+                  color: active ? '#fff' : 'var(--fg-muted)',
+                  borderColor: active ? (cc || 'var(--fg)') : 'var(--border)',
+                  transition: 'all 0.15s',
+                }}>×</button>
+              )}
+            </div>
+          );
+        })}
+        <button onClick={() => { setAddingCat(true); setTimeout(() => newCatRef.current?.focus(), 50); }} style={{
+          padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 500,
+          cursor: 'pointer', border: '1px solid var(--border)', whiteSpace: 'nowrap', flexShrink: 0,
+          background: 'transparent', color: 'var(--fg-muted)', opacity: 0.5,
+        }}>+ category</button>
+      </div>
+
+      {/* Inline new category form */}
+      {addingCat && (
+        <div style={{
+          background: 'var(--surface)', border: '1px solid var(--border)',
+          borderRadius: 12, padding: '12px 14px', marginBottom: 20,
+          display: 'flex', flexDirection: 'column', gap: 10,
+        }}>
+          <input ref={newCatRef} value={newCatName} onChange={e => setNewCatName(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') saveNewCat(); if (e.key === 'Escape') setAddingCat(false); }}
+            placeholder="Category name…"
+            style={{ background: 'none', border: 'none', outline: 'none', fontSize: 13, color: 'var(--fg)', fontFamily: 'inherit' }} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {CAT_PALETTE.map(p => (
+                <button key={p} onClick={() => setNewCatColor(p)} style={{
+                  width: 20, height: 20, borderRadius: '50%', background: p, border: 'none', cursor: 'pointer',
+                  outline: newCatColor === p ? `2px solid ${p}` : 'none', outlineOffset: 2,
+                }} />
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button onClick={() => setAddingCat(false)} style={{
+                background: 'var(--border)', border: 'none', borderRadius: 8, fontSize: 11,
+                color: 'var(--fg-muted)', cursor: 'pointer', padding: '6px 12px',
+              }}>Cancel</button>
+              <button onClick={saveNewCat} style={{
+                background: newCatColor, border: 'none', borderRadius: 8, fontSize: 11,
+                color: '#fff', cursor: 'pointer', padding: '6px 12px', fontWeight: 600,
+              }}>Save</button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -216,7 +293,7 @@ function Todos() {
               marginBottom: 8, paddingLeft: 2,
             }}>{bucket.label}</div>
             {tasks.map(t => (
-              <TodoRow key={t.id} item={t} onToggle={toggleDone} onDelete={deleteItem} onCycleCategory={cycleCategory} onSetDueDate={setDueDate} />
+              <TodoRow key={t.id} item={t} allCats={allCats} onToggle={toggleDone} onDelete={deleteItem} onCycleCategory={cycleCategory} onSetDueDate={setDueDate} />
             ))}
           </div>
         );
@@ -236,7 +313,7 @@ function Todos() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {shownDone.map(t => (
-              <TodoRow key={t.id} item={t} onToggle={toggleDone} onDelete={deleteItem} onCycleCategory={cycleCategory} onSetDueDate={setDueDate} />
+              <TodoRow key={t.id} item={t} allCats={allCats} onToggle={toggleDone} onDelete={deleteItem} onCycleCategory={cycleCategory} onSetDueDate={setDueDate} />
             ))}
           </div>
         </div>
@@ -245,9 +322,9 @@ function Todos() {
   );
 }
 
-function TodoRow({ item, onToggle, onDelete, onCycleCategory, onSetDueDate }) {
+function TodoRow({ item, allCats, onToggle, onDelete, onCycleCategory, onSetDueDate }) {
   const [pressed, setPressed] = React.useState(false);
-  const color    = catColor(item.category);
+  const color    = catColor(item.category, allCats);
   const dueFmt   = formatDueDate(item.dueDate);
   const pillStyle = duePillStyle(dueFmt);
 
@@ -286,45 +363,48 @@ function TodoRow({ item, onToggle, onDelete, onCycleCategory, onSetDueDate }) {
         }}>{item.text}</div>
       </div>
 
-      {/* Due date pill — tap to pick, × to clear */}
-      <div style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center',
-        padding: item.dueDate ? '5px 6px 5px 10px' : '5px 10px',
-        borderRadius: 20, gap: 5, ...pillStyle }}>
-        <span style={{
-          fontSize: 11, fontWeight: 600, pointerEvents: 'none', whiteSpace: 'nowrap',
-        }}>{dueFmt ? dueFmt.label : '◷'}</span>
-        {item.dueDate && (
-          <button onClick={e => { e.stopPropagation(); onSetDueDate(item.id, null); }} style={{
-            position: 'relative', zIndex: 1, background: 'rgba(0,0,0,0.12)', border: 'none',
-            borderRadius: 4, width: 18, height: 18, fontSize: 13, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'inherit', padding: 0, flexShrink: 0,
-          }}>×</button>
-        )}
-        <input type="date" value={item.dueDate || ''} onChange={e => onSetDueDate(item.id, e.target.value || null)}
-          style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+      {/* Actions */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+        {/* Due date pill */}
+        <div style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center',
+          padding: item.dueDate ? '5px 6px 5px 10px' : '5px 10px',
+          borderRadius: 20, gap: 5, ...pillStyle }}>
+          <span style={{
+            fontSize: 11, fontWeight: 600, pointerEvents: 'none', whiteSpace: 'nowrap',
+          }}>{dueFmt ? dueFmt.label : '◷'}</span>
+          {item.dueDate && (
+            <button onClick={e => { e.stopPropagation(); onSetDueDate(item.id, null); }} style={{
+              position: 'relative', zIndex: 1, background: 'rgba(0,0,0,0.12)', border: 'none',
+              borderRadius: 4, width: 18, height: 18, fontSize: 13, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'inherit', padding: 0, flexShrink: 0,
+            }}>×</button>
+          )}
+          <input type="date" value={item.dueDate || ''} onChange={e => onSetDueDate(item.id, e.target.value || null)}
+            style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+        </div>
+
+        {/* Category */}
+        <button onClick={() => onCycleCategory(item.id)} style={{
+          height: 30, borderRadius: 8, flexShrink: 0, padding: '0 10px',
+          background: color || 'var(--border)', border: 'none',
+          cursor: 'pointer', opacity: color ? 1 : 0.35,
+          display: 'flex', alignItems: 'center', gap: 5,
+        }}>
+          <span style={{ width: 7, height: 7, borderRadius: '50%', display: 'block', flexShrink: 0,
+            background: color ? 'rgba(255,255,255,0.8)' : 'var(--fg-muted)' }} />
+          <span style={{ fontSize: 11, color: color ? 'rgba(255,255,255,0.9)' : 'var(--fg-muted)', whiteSpace: 'nowrap' }}>
+            {item.category ? allCats.find(c => c.id === item.category)?.label : 'category'}
+          </span>
+        </button>
+
+        {/* Delete */}
+        <button onClick={() => onDelete(item.id)} style={{
+          background: 'var(--border)', border: 'none', color: 'var(--fg-muted)',
+          fontSize: 14, cursor: 'pointer', flexShrink: 0, borderRadius: 8,
+          width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>×</button>
       </div>
-
-      {/* Category button */}
-      <button onClick={() => onCycleCategory(item.id)} style={{
-        height: 30, borderRadius: 8, flexShrink: 0, padding: '0 10px',
-        background: color || 'var(--border)', border: 'none',
-        cursor: 'pointer', opacity: color ? 1 : 0.35,
-        display: 'flex', alignItems: 'center', gap: 5,
-      }}>
-        <span style={{ width: 7, height: 7, borderRadius: '50%', display: 'block', flexShrink: 0,
-          background: color ? 'rgba(255,255,255,0.8)' : 'var(--fg-muted)' }} />
-        <span style={{ fontSize: 11, color: color ? 'rgba(255,255,255,0.9)' : 'var(--fg-muted)', whiteSpace: 'nowrap' }}>
-          {item.category ? CATEGORIES.find(c => c.id === item.category)?.label : 'category'}
-        </span>
-      </button>
-
-      {/* Delete */}
-      <button onClick={() => onDelete(item.id)} style={{
-        background: 'var(--border)', border: 'none', color: 'var(--fg-muted)',
-        fontSize: 14, cursor: 'pointer', flexShrink: 0, borderRadius: 8,
-        width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>×</button>
     </div>
   );
 }
