@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>socialog</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        oklch(0.975 0.008 80);
+      --surface:   oklch(0.96  0.007 80);
+      --border:    oklch(0.88  0.006 80);
+      --fg:        oklch(0.13  0.010 80);
+      --fg-muted:  oklch(0.50  0.008 80);
+      --accent:    oklch(0.13  0.010 80);
+      --font:      'Geist', 'Helvetica Neue', sans-serif;
+      --mono:      'Geist Mono', monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg:        oklch(0.10  0.010 80);
+      --surface:   oklch(0.14  0.010 80);
+      --border:    oklch(0.22  0.010 80);
+      --fg:        oklch(0.95  0.008 80);
+      --fg-muted:  oklch(0.58  0.008 80);
+      --accent:    oklch(0.95  0.008 80);
+    }
+
+    html, body, #root {
+      height: 100%;
+      width: 100%;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior: none;
+    }
+
+    ::selection { background: var(--fg); color: var(--bg); }
+
+    input, textarea, button {
+      font-family: var(--font);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    ::-webkit-scrollbar { width: 3px; height: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    button:active { opacity: 0.7; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="utils.js"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="Bookmarks.jsx"></script>
+  <script type="text/babel" src="Todos.jsx"></script>
+  <script type="text/babel" src="Routines.jsx"></script>
+
+  <script type="text/babel">
+    // ── Tweaks defaults ───────────────────────────────────────────────────────
+    const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+      "theme": "light",
+      "accentHue": 80,
+      "fontScale": 0.95,
+      "bookmarkLayout": "list"
+    }/*EDITMODE-END*/;
+
+    // ── Tab config ────────────────────────────────────────────────────────────
+    const TABS = [
+      { id: 'bookmarks', label: 'Saved',    icon: '◻' },
+      { id: 'todos',     label: 'Tasks',    icon: '✓' },
+      { id: 'routines',  label: 'Routines', icon: '○' },
+    ];
+
+    // ── App shell ─────────────────────────────────────────────────────────────
+    function App() {
+      const [tab, setTab] = React.useState(
+        () => localStorage.getItem('socialog_tab') || 'bookmarks'
+      );
+      const [tweaks, setTweaksState] = React.useState(TWEAK_DEFAULTS);
+      const [tweaksOpen, setTweaksOpen] = React.useState(false);
+
+      // Persist active tab
+      React.useEffect(() => {
+        localStorage.setItem('socialog_tab', tab);
+      }, [tab]);
+
+      // Apply theme
+      React.useEffect(() => {
+        document.documentElement.setAttribute('data-theme', tweaks.theme);
+      }, [tweaks.theme]);
+
+      // Tweaks panel protocol
+      React.useEffect(() => {
+        function handleMsg(e) {
+          if (e.data?.type === '__activate_edit_mode')   setTweaksOpen(true);
+          if (e.data?.type === '__deactivate_edit_mode') setTweaksOpen(false);
+        }
+        window.addEventListener('message', handleMsg);
+        window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+        return () => window.removeEventListener('message', handleMsg);
+      }, []);
+
+      function setTweak(key, val) {
+        const update = typeof key === 'object' ? key : { [key]: val };
+        setTweaksState(prev => {
+          const next = { ...prev, ...update };
+          window.parent.postMessage({ type: '__edit_mode_set_keys', edits: next }, '*');
+          return next;
+        });
+      }
+
+      // Page title maps
+      const PAGE_TITLES = {
+        bookmarks: 'Saved',
+        todos:     'Tasks',
+        routines:  'Routines',
+      };
+
+      // Pending counts
+      const todosData     = React.useMemo(() => load('todos') || [],    [tab]);
+      const routinesData  = React.useMemo(() => load('routines') || [], [tab]);
+      const pendingTodos  = todosData.filter(t => !t.done).length;
+      const todayIdx      = currentDayIndex();
+      const todayKey      = today();
+      const pendingRoutines = routinesData.filter(r =>
+        r.days.includes(todayIdx) && !(r.completions && r.completions[todayKey])
+      ).length;
+
+      const badges = {
+        todos:    pendingTodos,
+        routines: pendingRoutines,
+      };
+
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', maxWidth: 480, margin: '0 auto', position: 'relative', background: 'var(--bg)' }}>
+
+          {/* ── Header ── */}
+          <div style={{
+            padding: 'env(safe-area-inset-top, 0px) 20px 0',
+            flexShrink: 0,
+          }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '16px 0 12px', borderBottom: '1px solid var(--border)',
+            }}>
+              <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.02em', fontFamily: 'var(--mono)' }}>
+                socialog
+              </span>
+                  <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--fg)' }}>
+                  {PAGE_TITLES[tab]}
+              </span>
+            </div>
+          </div>
+
+          {/* ── Content ── */}
+          <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+            {tab === 'bookmarks' && <Bookmarks />}
+            {tab === 'todos'     && <Todos />}
+            {tab === 'routines'  && <Routines />}
+
+          </div>
+
+          {/* ── Bottom tab bar ── */}
+          <nav style={{
+            display: 'flex', borderTop: '1px solid var(--border)',
+            background: 'var(--bg)', flexShrink: 0,
+            paddingBottom: 'env(safe-area-inset-bottom, 12px)',
+          }}>
+            {TABS.map(t => {
+              const active = tab === t.id;
+              const badge  = badges[t.id] || 0;
+              return (
+                <button key={t.id} onClick={() => setTab(t.id)} style={{
+                  flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  gap: 3, padding: '10px 0 6px', background: 'none', border: 'none',
+                  cursor: 'pointer', color: active ? 'var(--fg)' : 'var(--fg-muted)',
+                  transition: 'color 0.15s', position: 'relative',
+                }}>
+                  {/* Icon */}
+                  <span style={{
+                    fontSize: 18, lineHeight: 1,
+                    opacity: active ? 1 : 0.45,
+                    transition: 'opacity 0.15s',
+                    transform: active ? 'scale(1.1)' : 'scale(1)',
+                    display: 'inline-block', transition: 'all 0.15s',
+                  }}>{t.icon}</span>
+                  {/* Label */}
+                  <span style={{
+                    fontSize: 10, fontWeight: active ? 600 : 400,
+                    letterSpacing: '0.04em', textTransform: 'uppercase',
+                  }}>{t.label}</span>
+                  {/* Badge */}
+                  {badge > 0 && (
+                    <span style={{
+                      position: 'absolute', top: 6, right: '50%', marginRight: -18,
+                      background: 'var(--fg)', color: 'var(--bg)',
+                      fontSize: 9, fontWeight: 700, borderRadius: 10,
+                      padding: '1px 5px', lineHeight: 1.4,
+                    }}>{badge}</span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* ── Tweaks panel ── */}
+          {tweaksOpen && (
+            <TweaksPanel onClose={() => {
+              setTweaksOpen(false);
+              window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
+            }}>
+              <TweakSection title="Appearance">
+                <TweakRadio
+                  label="Theme"
+                  value={tweaks.theme}
+                  options={[{ value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }]}
+                  onChange={v => setTweak('theme', v)}
+                />
+                <TweakSlider
+                  label="Font scale"
+                  value={tweaks.fontScale}
+                  min={0.85} max={1.2} step={0.05}
+                  onChange={v => {
+                    setTweak('fontScale', v);
+                    document.documentElement.style.fontSize = (v * 16) + 'px';
+                  }}
+                />
+              </TweakSection>
+              <TweakSection title="Bookmarks">
+                <TweakRadio
+                  label="Layout"
+                  value={tweaks.bookmarkLayout}
+                  options={[{ value: 'grid', label: 'Grid' }, { value: 'list', label: 'List' }]}
+                  onChange={v => {
+                    setTweak('bookmarkLayout', v);
+                    window.__bookmarkLayout = v;
+                    window.dispatchEvent(new CustomEvent('bookmarkLayoutChange', { detail: v }));
+                  }}
+                />
+              </TweakSection>
+            </TweaksPanel>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
