@@ -205,7 +205,7 @@ function QuickAdd({ onAdd }) {
     <form onSubmit={handleSubmit} style={{
       display: 'flex', gap: 8, alignItems: 'center',
       background: 'var(--surface)', border: '1px solid var(--border)',
-      borderRadius: 12, padding: '10px 14px',
+      borderRadius: 12, padding: '10px 14px', marginBottom: 16,
     }}>
       <span style={{ color: 'var(--fg-muted)', fontSize: 14, flexShrink: 0 }}>⊕</span>
       <input
@@ -409,9 +409,8 @@ function BookmarkCard({ bm, onEdit, onDelete }) {
 function Bookmarks() {
   const [items, setItems]       = React.useState(() => load('bookmarks') || []);
   const [modal, setModal]       = React.useState(null);
-  const [filter, setFilter]     = React.useState('all');
+  const [filter, setFilter]         = React.useState('all');
   const [typeFilter, setTypeFilter] = React.useState('all');
-  const [search, setSearch]     = React.useState('');
 
 
   // Listen for new event from header + button
@@ -445,36 +444,15 @@ function Bookmarks() {
   const filtered = items.filter(b => {
     if (filter !== 'all' && b.status !== filter) return false;
     if (typeFilter !== 'all' && b.type !== typeFilter) return false;
-    if (search && !b.title.toLowerCase().includes(search.toLowerCase()) &&
-        !(b.notes || '').toLowerCase().includes(search.toLowerCase()) &&
-        !(b.tags || '').toLowerCase().includes(search.toLowerCase()) &&
-        !(b.url || '').toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
   return (
-    <div style={{ padding: '0 0 40px' }}>
-      {/* Quick-add bar */}
-      <div style={{ padding: '12px 16px 0' }}>
-        <QuickAdd onAdd={handleAdd} />
-      </div>
-
-      {/* Search */}
-      <div style={{ padding: '10px 16px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10,
-          background: 'var(--surface)', border: '1px solid var(--border)',
-          borderRadius: 12, padding: '8px 14px' }}>
-          <span style={{ color: 'var(--fg-muted)', fontSize: 14 }}>⌕</span>
-          <input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search…"
-            style={{ flex: 1, background: 'none', border: 'none', outline: 'none',
-              fontSize: 13, color: 'var(--fg)', fontFamily: 'inherit' }} />
-
-        </div>
-      </div>
+    <div style={{ padding: '16px 16px 40px' }}>
+      <QuickAdd onAdd={handleAdd} />
 
       {/* Type filter pills */}
-      <div style={{ padding: '10px 16px 0', display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
+      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 4 }}>
         {[['all','All'], ...Object.entries(BOOKMARK_TYPES).map(([k,t]) => [k, t.label])].map(([key, label]) => (
           <button key={key} onClick={() => setTypeFilter(key)} style={{
             padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 500,
@@ -490,7 +468,7 @@ function Bookmarks() {
       </div>
 
       {/* Status filter */}
-      <div style={{ padding: '8px 16px 4px', display: 'flex', gap: 6 }}>
+      <div style={{ display: 'flex', gap: 6, marginBottom: 4 }}>
         {[['all','All'], ['want to try','Want'], ['in progress','Doing'], ['done','Done']].map(([key, label]) => (
           <button key={key} onClick={() => setFilter(key)} style={{
             padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600,
@@ -504,15 +482,15 @@ function Bookmarks() {
       </div>
 
       {/* Cards */}
-      <div style={{ padding: '0 16px' }}>
+      <div>
         {filtered.map(bm => (
           <BookmarkCard key={bm.id} bm={bm} onEdit={b => setModal(b)} onDelete={handleDelete} />
         ))}
       </div>
 
       {filtered.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '50px 20px', color: 'var(--fg-muted)' }}>
-          <div style={{ fontSize: 28, marginBottom: 10, opacity: 0.3 }}>⊕</div>
+        <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--fg-muted)' }}>
+          <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.3 }}>★</div>
           <div style={{ fontSize: 14 }}>Paste a link above to save it</div>
         </div>
       )}

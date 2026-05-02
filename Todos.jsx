@@ -38,6 +38,7 @@ function Todos() {
         background: 'var(--surface)', border: '1px solid var(--border)',
         borderRadius: 12, padding: '10px 14px', marginBottom: 20,
       }}>
+        <span style={{ color: 'var(--fg-muted)', fontSize: 14, flexShrink: 0 }}>□</span>
         <input
           ref={inputRef}
           value={input}

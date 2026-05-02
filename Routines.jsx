@@ -1,6 +1,7 @@
 // Routines component — daily/weekly repeating habits
 
-const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAY_NAMES  = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0]; // Mon-first display order
 
 function emptyRoutine() {
   return {
@@ -62,7 +63,7 @@ function RoutineModal({ routine, onSave, onClose }) {
           <div>
             <span style={labelStyle}>Repeat on</span>
             <div style={{ display: 'flex', gap: 6, justifyContent: 'space-between' }}>
-              {DAY_NAMES.map((d, i) => (
+              {WEEK_ORDER.map(i => (
                 <button key={i} onClick={() => toggleDay(i)} style={{
                   flex: 1, padding: '8px 0', borderRadius: 8, fontSize: 11, fontWeight: 600,
                   cursor: 'pointer', border: '1px solid',
@@ -71,7 +72,7 @@ function RoutineModal({ routine, onSave, onClose }) {
                   borderColor: form.days.includes(i) ? 'var(--fg)' : 'var(--border)',
                   transition: 'all 0.15s',
                 }}>
-                  {d}
+                  {DAY_NAMES[i]}
                 </button>
               ))}
             </div>
@@ -163,7 +164,7 @@ function RoutineRow({ routine, onToggleToday, onEdit, onDelete }) {
         <div style={{ fontSize: 15, fontWeight: 500, marginBottom: 3 }}>{routine.title}</div>
         {/* Day dots */}
         <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
-          {DAY_NAMES.map((d, i) => (
+          {WEEK_ORDER.map(i => (
             <span key={i} style={{
               width: 18, height: 18, borderRadius: 4, fontSize: 9, fontWeight: 700,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -173,7 +174,7 @@ function RoutineRow({ routine, onToggleToday, onEdit, onDelete }) {
               color: routine.days.includes(i)
                 ? (i === todayDayIdx ? 'var(--bg)' : 'var(--fg-muted)')
                 : 'var(--border)',
-            }}>{d.slice(0,1)}</span>
+            }}>{DAY_NAMES[i].slice(0,1)}</span>
           ))}
           <span style={{ marginLeft: 4, fontSize: 11, color: 'var(--fg-muted)' }}>
             {TIME_ICONS[routine.timeOfDay]} {routine.timeOfDay}
