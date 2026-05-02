@@ -51,34 +51,58 @@ function extractDomain(url) {
   }
 }
 
+function decodeHtmlEntities(str) {
+  return str
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&nbsp;/g, ' ')
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n))
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)));
+}
+
+function parseTitleFromHtml(html) {
+  const ogTitle = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"'<>]+)["']/i)
+               || html.match(/<meta[^>]+content=["']([^"'<>]+)["'][^>]+property=["']og:title["']/i);
+  const ogImage = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"'<>]+)["']/i)
+               || html.match(/<meta[^>]+content=["']([^"'<>]+)["'][^>]+property=["']og:image["']/i);
+  const coverUrl = ogImage ? decodeHtmlEntities(ogImage[1].trim()) : '';
+
+  if (ogTitle) {
+    return { title: decodeHtmlEntities(ogTitle[1].trim()).slice(0, 150), coverUrl };
+  }
+
+  const tMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+  if (tMatch) {
+    const title = decodeHtmlEntities(tMatch[1].trim())
+      .replace(/\s*[|\-–—·•]\s*.{2,60}$/, '')
+      .slice(0, 150);
+    return { title, coverUrl };
+  }
+  return null;
+}
+
 // ── Smart title extraction from URL ──────────────────────────────────────────
 function extractSmartMeta(url) {
   try {
     const u = new URL(url);
     const host = u.hostname.replace(/^www\./, '');
-    const path = u.pathname;
-    const params = u.searchParams;
 
-    // YouTube — video title from ?v= or /shorts/
-    if (/youtube\.com|youtu\.be/.test(host)) {
-      const videoId = params.get('v') || path.split('/').pop();
+    if (/youtube\.com|youtu\.be/.test(host))
       return { fetchUrl: `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`, parseOembed: true };
-    }
 
-    // Spotify — extract from path: /track/id, /album/id, /artist/id, /playlist/id
-    if (/spotify\.com/.test(host)) {
+    if (/spotify\.com/.test(host))
       return { fetchUrl: `https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`, parseOembed: true };
-    }
 
-    // Vimeo
-    if (/vimeo\.com/.test(host)) {
+    if (/vimeo\.com/.test(host))
       return { fetchUrl: `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(url)}`, parseOembed: true };
-    }
 
-    // SoundCloud
-    if (/soundcloud\.com/.test(host)) {
+    if (/soundcloud\.com/.test(host))
       return { fetchUrl: `https://soundcloud.com/oembed?url=${encodeURIComponent(url)}&format=json`, parseOembed: true };
-    }
+
+    if (/reddit\.com/.test(host))
+      return { fetchUrl: `https://www.reddit.com/oembed?url=${encodeURIComponent(url)}`, parseOembed: true };
+
+    if (/tiktok\.com/.test(host))
+      return { fetchUrl: `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`, parseOembed: true };
 
   } catch (e) {}
   return null;
@@ -98,20 +122,28 @@ async function fetchSmartTitle(url) {
     } catch (e) {}
   }
 
-  // Fallback: allorigins proxy for page <title>
-  try {
-    const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-    const res = await fetch(proxy, { signal: AbortSignal.timeout(6000) });
-    const data = await res.json();
-    const match = data.contents?.match(/<title[^>]*>([^<]+)<\/title>/i);
-    if (match) {
-      // Clean up common title suffixes
-      let title = match[1].trim()
-        .replace(/\s*[|\-–—]\s*(YouTube|Spotify|Netflix|IMDb|Goodreads|Amazon|Letterboxd).*$/i, '')
-        .slice(0, 120);
-      return { title, coverUrl: '' };
-    }
-  } catch (e) {}
+  // General proxy-based fetch for all other domains — try two proxies in sequence
+  const proxyFetchers = [
+    async () => {
+      const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(7000) });
+      if (!r.ok) return null;
+      return (await r.json()).contents || null;
+    },
+    async () => {
+      const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(7000) });
+      if (!r.ok) return null;
+      return r.text();
+    },
+  ];
+
+  for (const fetcher of proxyFetchers) {
+    try {
+      const html = await fetcher();
+      if (!html) continue;
+      const parsed = parseTitleFromHtml(html);
+      if (parsed?.title) return parsed;
+    } catch (e) {}
+  }
 
   return null;
 }
