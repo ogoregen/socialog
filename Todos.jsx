@@ -146,23 +146,23 @@ function Todos() {
             </span>
           </button>
           <div style={{ position: 'relative', height: 30, minWidth: 30, flexShrink: 0,
-            background: 'var(--border)', borderRadius: 8, padding: '0 10px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            background: 'var(--border)', borderRadius: 8, padding: addDue ? '0 6px 0 10px' : '0 10px',
+            display: 'flex', alignItems: 'center', gap: 5 }}>
             <span style={{
               fontSize: 11, pointerEvents: 'none', whiteSpace: 'nowrap',
               color: 'var(--fg-muted)', opacity: addDue ? 1 : 0.6,
             }}>{addDueFmt ? addDueFmt.label : '◷'}</span>
+            {addDue && (
+              <button onClick={e => { e.stopPropagation(); setAddDue(null); }} style={{
+                position: 'relative', zIndex: 1, background: 'rgba(0,0,0,0.12)', border: 'none',
+                borderRadius: 4, width: 18, height: 18, fontSize: 13, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'var(--fg-muted)', padding: 0, flexShrink: 0,
+              }}>×</button>
+            )}
             <input type="date" value={addDue || ''} onChange={e => setAddDue(e.target.value || null)}
               style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
           </div>
-          {addDue && (
-            <button onClick={() => setAddDue(null)} style={{
-              background: 'none', border: 'none', color: 'var(--fg-muted)',
-              cursor: 'pointer', opacity: 0.6, flexShrink: 0,
-              width: 30, height: 30, fontSize: 18,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>×</button>
-          )}
         </div>
         <button onClick={addTodo} style={{
           background: 'var(--fg)', color: 'var(--bg)', border: 'none',
