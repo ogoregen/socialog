@@ -11,13 +11,6 @@ function emptyRoutine() {
   };
 }
 
-function getMondayOf(date) {
-  const d = new Date(date); d.setHours(0, 0, 0, 0);
-  const day = d.getDay();
-  d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day));
-  return d;
-}
-
 function hasCompletionInWeek(completions, monday) {
   if (!completions) return false;
   const sun = new Date(monday); sun.setDate(sun.getDate() + 7);
@@ -146,42 +139,44 @@ function RoutineModal({ routine, onSave, onClose }) {
   );
 }
 
+function calcStreak(routine, isWeekly, completedThisWeek) {
+  let streak = 0;
+  if (isWeekly) {
+    const d = new Date();
+    if (!completedThisWeek) d.setDate(d.getDate() - 7);
+    for (let i = 0; i < 52; i++) {
+      const mon = getMondayOf(d);
+      if (hasCompletionInWeek(routine.completions, mon)) { streak++; d.setDate(d.getDate() - 7); }
+      else break;
+    }
+  } else {
+    const d = new Date();
+    while (streak <= 365) {
+      const key = d.toISOString().slice(0, 10);
+      const dayIdx = d.getDay();
+      if (!routine.days.includes(dayIdx)) { d.setDate(d.getDate() - 1); continue; }
+      if (routine.completions && routine.completions[key]) { streak++; d.setDate(d.getDate() - 1); }
+      else break;
+    }
+  }
+  return streak;
+}
+
 function RoutineRow({ routine, onToggleToday, onEdit, onDelete }) {
   const todayKey = today();
   const todayDayIdx = currentDayIndex();
   const thisMonday = getMondayOf(new Date());
 
-  const isWeekly = !!routine.weekly;
+  const isWeekly = routine.weekly;
   const completedThisWeek = isWeekly && hasCompletionInWeek(routine.completions, thisMonday);
   const completedToday = !isWeekly && !!(routine.completions && routine.completions[todayKey]);
   const isScheduledToday = isWeekly ? true : routine.days.includes(todayDayIdx);
   const isDone = isWeekly ? completedThisWeek : completedToday;
 
-  function calcStreak() {
-    let streak = 0;
-    if (isWeekly) {
-      const d = new Date();
-      if (!completedThisWeek) d.setDate(d.getDate() - 7);
-      for (let i = 0; i < 52; i++) {
-        const mon = getMondayOf(d);
-        if (hasCompletionInWeek(routine.completions, mon)) { streak++; d.setDate(d.getDate() - 7); }
-        else break;
-      }
-    } else {
-      const d = new Date();
-      while (true) {
-        const key = d.toISOString().slice(0, 10);
-        const dayIdx = d.getDay();
-        if (!routine.days.includes(dayIdx)) { d.setDate(d.getDate() - 1); continue; }
-        if (routine.completions && routine.completions[key]) { streak++; d.setDate(d.getDate() - 1); }
-        else break;
-        if (streak > 365) break;
-      }
-    }
-    return streak;
-  }
-
-  const streak = calcStreak();
+  const streak = React.useMemo(
+    () => calcStreak(routine, isWeekly, completedThisWeek),
+    [routine.completions, isWeekly, completedThisWeek]
+  );
   const TIME_ICONS = { morning: '◎', afternoon: '◑', evening: '●', anytime: '○' };
 
   return (

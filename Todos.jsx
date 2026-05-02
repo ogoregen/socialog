@@ -21,9 +21,7 @@ function nextCat(id) {
 
 function formatDueDate(iso) {
   if (!iso) return null;
-  const due = new Date(iso + 'T00:00:00');
-  const now = new Date(); now.setHours(0, 0, 0, 0);
-  const diff = Math.round((due - now) / 86400000);
+  const diff = daysDiff(iso);
   if (diff < 0) {
     const n = Math.abs(diff);
     const label = n < 7 ? `${n}d overdue` : n < 30 ? `${Math.floor(n / 7)}w overdue` : `${Math.floor(n / 30)}mo overdue`;
@@ -55,9 +53,7 @@ const BUCKETS = [
 
 function getBucket(iso) {
   if (!iso) return 'someday';
-  const due = new Date(iso + 'T00:00:00');
-  const now = new Date(); now.setHours(0, 0, 0, 0);
-  const diff = Math.round((due - now) / 86400000);
+  const diff = daysDiff(iso);
   if (diff < 0)  return 'overdue';
   if (diff === 0) return 'today';
   if (diff === 1) return 'tomorrow';

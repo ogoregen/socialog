@@ -12,7 +12,7 @@ const BOOKMARK_TYPES = {
 
 const STATUS_OPTIONS = ['want to try', 'in progress', 'done'];
 const STATUS_LABELS  = { 'want to try': 'Want', 'in progress': 'Doing', 'done': 'Done' };
-const STATUS_COLORS  = { 'want to try': '#3b82f6', 'in progress': '#f59e0b', 'done': '#22c55e' };
+const STATUS_COLORS  = { all: 'var(--fg)', 'want to try': '#3b82f6', 'in progress': '#f59e0b', 'done': '#22c55e' };
 
 // ── URL type inference ────────────────────────────────────────────────────────
 const TYPE_RULES = [
@@ -472,9 +472,9 @@ function Bookmarks() {
           <button key={key} onClick={() => setFilter(key)} style={{
             padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600,
             cursor: 'pointer', border: '1px solid',
-            background: active ? (cc || 'var(--fg)') : 'transparent',
+            background: active ? cc : 'transparent',
             color: active ? '#fff' : 'var(--fg-muted)',
-            borderColor: active ? (cc || 'var(--fg)') : 'var(--border)',
+            borderColor: active ? cc : 'var(--border)',
             transition: 'all 0.15s',
           }}>{label}</button>
         );})}

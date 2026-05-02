@@ -49,4 +49,18 @@ function currentDayIndex() {
   return new Date().getDay(); // 0=Sun
 }
 
-Object.assign(window, { load, save, uid, formatDate, today, dayName, currentDayIndex, STORAGE_KEYS });
+function daysDiff(iso) {
+  if (!iso) return null;
+  const due = new Date(iso + 'T00:00:00');
+  const now = new Date(); now.setHours(0, 0, 0, 0);
+  return Math.round((due - now) / 86400000);
+}
+
+function getMondayOf(date) {
+  const d = new Date(date); d.setHours(0, 0, 0, 0);
+  const day = d.getDay();
+  d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day));
+  return d;
+}
+
+Object.assign(window, { load, save, uid, formatDate, today, dayName, currentDayIndex, daysDiff, getMondayOf, STORAGE_KEYS });
