@@ -183,7 +183,7 @@ function RoutineRow({ routine, onToggleToday, onEdit, onDelete }) {
     <div style={{
       display: 'flex', alignItems: 'center', gap: 12,
       padding: '18px 0', borderBottom: '1px solid var(--border)',
-      opacity: (!isScheduledToday && !isDone) ? 0.3 : 1,
+      opacity: (!isScheduledToday && !isDone) ? 0.65 : 1,
     }}>
       {/* Check circle */}
       <button onClick={() => isScheduledToday && onToggleToday(routine.id)} style={{
