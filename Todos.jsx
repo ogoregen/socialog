@@ -173,7 +173,7 @@ function Todos() {
         {/* Due date */}
         <div style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center',
           padding: addDue ? '5px 6px 5px 10px' : '5px 10px',
-          borderRadius: 20, gap: 5, ...duePillStyle(addDueFmt) }}>
+          borderRadius: 20, gap: 5, cursor: 'pointer', ...duePillStyle(addDueFmt) }}>
           <span style={{
             fontSize: 11, fontWeight: 600, pointerEvents: 'none', whiteSpace: 'nowrap',
           }}>{addDueFmt ? addDueFmt.label : '◷'}</span>
@@ -368,7 +368,7 @@ function TodoRow({ item, allCats, onToggle, onDelete, onCycleCategory, onSetDueD
         {/* Due date pill */}
         <div style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center',
           padding: item.dueDate ? '5px 6px 5px 10px' : '5px 10px',
-          borderRadius: 20, gap: 5, ...pillStyle }}>
+          borderRadius: 20, gap: 5, cursor: 'pointer', ...pillStyle }}>
           <span style={{
             fontSize: 11, fontWeight: 600, pointerEvents: 'none', whiteSpace: 'nowrap',
           }}>{dueFmt ? dueFmt.label : '◷'}</span>
