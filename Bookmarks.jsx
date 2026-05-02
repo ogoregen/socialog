@@ -219,16 +219,12 @@ function QuickAdd({ onAdd }) {
           fontSize: 14, color: 'var(--fg)', fontFamily: 'inherit',
         }}
       />
-      {loading
-        ? <span style={{ fontSize: 12, color: 'var(--fg-muted)', flexShrink: 0 }}>saving…</span>
-        : url && (
-          <button type="submit" style={{
-            background: 'var(--fg)', color: 'var(--bg)', border: 'none',
-            borderRadius: 7, padding: '4px 10px', fontSize: 12, fontWeight: 600,
-            cursor: 'pointer', flexShrink: 0,
-          }}>Save</button>
-        )
-      }
+      <button type="submit" disabled={loading} style={{
+        background: 'var(--fg)', color: 'var(--bg)', border: 'none',
+        borderRadius: 8, width: 30, height: 30, fontSize: loading ? 14 : 18, cursor: 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        opacity: loading ? 0.5 : 1,
+      }}>{loading ? '…' : '+'}</button>
     </form>
   );
 }

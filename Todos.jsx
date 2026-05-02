@@ -36,7 +36,7 @@ function Todos() {
       <div style={{
         display: 'flex', gap: 8, alignItems: 'center',
         background: 'var(--surface)', border: '1px solid var(--border)',
-        borderRadius: 12, padding: '10px 14px', marginBottom: 20,
+        borderRadius: 12, padding: '10px 14px', marginBottom: 16,
       }}>
         <span style={{ color: 'var(--fg-muted)', fontSize: 14, flexShrink: 0 }}>□</span>
         <input
@@ -47,7 +47,7 @@ function Todos() {
           placeholder="Add a task…"
           style={{
             flex: 1, background: 'none', border: 'none', outline: 'none',
-            fontSize: 15, color: 'var(--fg)', fontFamily: 'inherit',
+            fontSize: 14, color: 'var(--fg)', fontFamily: 'inherit',
           }}
         />
         <button onClick={addTodo} style={{
@@ -59,7 +59,7 @@ function Todos() {
 
       {/* Active tasks */}
       {active.length === 0 && done.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--fg-muted)' }}>
+        <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--fg-muted)' }}>
           <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.3 }}>✓</div>
           <div style={{ fontSize: 14 }}>Nothing to do — add a task above</div>
         </div>
