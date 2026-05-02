@@ -119,11 +119,7 @@ function Todos() {
         background: 'var(--surface)', border: '1px solid var(--border)',
         borderRadius: 12, padding: '10px 14px', marginBottom: 12,
       }}>
-        <button onClick={() => setAddCat(nextCat(addCat))} title={addCat ? CATEGORIES.find(c => c.id === addCat)?.label : 'No category'} style={{
-          width: 14, height: 14, borderRadius: '50%', flexShrink: 0, padding: 0, cursor: 'pointer',
-          background: addColor || 'transparent',
-          border: `2px solid ${addColor || 'var(--border)'}`,
-        }} />
+        <span style={{ color: 'var(--fg-muted)', fontSize: 14, flexShrink: 0 }}>✓</span>
         <input
           ref={inputRef}
           value={input}
@@ -135,8 +131,13 @@ function Todos() {
             fontSize: 14, color: 'var(--fg)', fontFamily: 'inherit',
           }}
         />
-        {/* Due date picker */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+        {/* Category + due date */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+          <button onClick={() => setAddCat(nextCat(addCat))} title={addCat ? CATEGORIES.find(c => c.id === addCat)?.label : 'No category'} style={{
+            width: 14, height: 14, borderRadius: '50%', flexShrink: 0, padding: 0, cursor: 'pointer',
+            background: addColor || 'transparent',
+            border: `2px solid ${addColor || 'var(--border)'}`,
+          }} />
           <div style={{ position: 'relative', width: 30, height: 30, flexShrink: 0,
             background: 'var(--border)', borderRadius: 8,
             display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
