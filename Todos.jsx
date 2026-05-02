@@ -19,10 +19,22 @@ function nextCat(id) {
   return CATEGORIES[idx + 1].id;
 }
 
+function formatDueDate(iso) {
+  if (!iso) return null;
+  const due = new Date(iso + 'T00:00:00');
+  const now = new Date(); now.setHours(0, 0, 0, 0);
+  const diff = Math.round((due - now) / 86400000);
+  if (diff < 0)  return { label: due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · overdue', overdue: true, soon: false };
+  if (diff === 0) return { label: 'Today', overdue: false, soon: true };
+  if (diff === 1) return { label: 'Tomorrow', overdue: false, soon: false };
+  return { label: due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), overdue: false, soon: false };
+}
+
 function Todos() {
-  const [items, setItems]       = React.useState(() => load('todos') || []);
-  const [input, setInput]       = React.useState('');
-  const [addCat, setAddCat]     = React.useState(null);
+  const [items, setItems]         = React.useState(() => load('todos') || []);
+  const [input, setInput]         = React.useState('');
+  const [addCat, setAddCat]       = React.useState(null);
+  const [addDue, setAddDue]       = React.useState(null);
   const [catFilter, setCatFilter] = React.useState(null);
   const inputRef = React.useRef();
 
@@ -31,8 +43,9 @@ function Todos() {
   function addTodo() {
     const text = input.trim();
     if (!text) return;
-    setItems(prev => [{ id: uid(), text, done: false, category: addCat, createdAt: new Date().toISOString() }, ...prev]);
+    setItems(prev => [{ id: uid(), text, done: false, category: addCat, dueDate: addDue, createdAt: new Date().toISOString() }, ...prev]);
     setInput('');
+    setAddDue(null);
     inputRef.current?.focus();
   }
 
@@ -42,6 +55,10 @@ function Todos() {
 
   function cycleCategory(id) {
     setItems(prev => prev.map(t => t.id === id ? { ...t, category: nextCat(t.category) } : t));
+  }
+
+  function setDueDate(id, date) {
+    setItems(prev => prev.map(t => t.id === id ? { ...t, dueDate: date || null } : t));
   }
 
   function deleteItem(id) {
@@ -60,7 +77,8 @@ function Todos() {
 
   const usedCats = CATEGORIES.filter(c => items.some(t => t.category === c.id));
 
-  const color = catColor(addCat);
+  const addColor = catColor(addCat);
+  const addDueFmt = formatDueDate(addDue);
 
   return (
     <div style={{ padding: '16px 16px 40px' }}>
@@ -72,8 +90,8 @@ function Todos() {
       }}>
         <button onClick={() => setAddCat(nextCat(addCat))} title={addCat ? CATEGORIES.find(c => c.id === addCat)?.label : 'No category'} style={{
           width: 14, height: 14, borderRadius: '50%', flexShrink: 0, padding: 0, cursor: 'pointer',
-          background: color || 'transparent',
-          border: `2px solid ${color || 'var(--border)'}`,
+          background: addColor || 'transparent',
+          border: `2px solid ${addColor || 'var(--border)'}`,
         }} />
         <input
           ref={inputRef}
@@ -86,6 +104,23 @@ function Todos() {
             fontSize: 14, color: 'var(--fg)', fontFamily: 'inherit',
           }}
         />
+        {/* Due date picker */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+          <div style={{ position: 'relative' }}>
+            <span style={{
+              fontSize: 11, display: 'block', padding: '1px 0', pointerEvents: 'none',
+              color: 'var(--fg-muted)', opacity: addDue ? 1 : 0.4, whiteSpace: 'nowrap',
+            }}>{addDueFmt ? addDueFmt.label : '◷'}</span>
+            <input type="date" value={addDue || ''} onChange={e => setAddDue(e.target.value || null)}
+              style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+          </div>
+          {addDue && (
+            <button onClick={() => setAddDue(null)} style={{
+              background: 'none', border: 'none', fontSize: 12, color: 'var(--fg-muted)',
+              cursor: 'pointer', padding: 0, opacity: 0.6, lineHeight: 1,
+            }}>×</button>
+          )}
+        </div>
         <button onClick={addTodo} style={{
           background: 'var(--fg)', color: 'var(--bg)', border: 'none',
           borderRadius: 8, width: 30, height: 30, fontSize: 18, cursor: 'pointer',
@@ -131,7 +166,7 @@ function Todos() {
 
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {shownActive.map(t => (
-          <TodoRow key={t.id} item={t} onToggle={toggleDone} onDelete={deleteItem} onCycleCategory={cycleCategory} />
+          <TodoRow key={t.id} item={t} onToggle={toggleDone} onDelete={deleteItem} onCycleCategory={cycleCategory} onSetDueDate={setDueDate} />
         ))}
       </div>
 
@@ -150,7 +185,7 @@ function Todos() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {shownDone.map(t => (
-              <TodoRow key={t.id} item={t} onToggle={toggleDone} onDelete={deleteItem} onCycleCategory={cycleCategory} />
+              <TodoRow key={t.id} item={t} onToggle={toggleDone} onDelete={deleteItem} onCycleCategory={cycleCategory} onSetDueDate={setDueDate} />
             ))}
           </div>
         </div>
@@ -159,9 +194,11 @@ function Todos() {
   );
 }
 
-function TodoRow({ item, onToggle, onDelete, onCycleCategory }) {
+function TodoRow({ item, onToggle, onDelete, onCycleCategory, onSetDueDate }) {
   const [pressed, setPressed] = React.useState(false);
-  const color = catColor(item.category);
+  const color  = catColor(item.category);
+  const dueFmt = formatDueDate(item.dueDate);
+  const dateColor = dueFmt?.overdue ? '#ef4444' : dueFmt?.soon ? '#f59e0b' : 'var(--fg-muted)';
 
   return (
     <div
@@ -179,28 +216,46 @@ function TodoRow({ item, onToggle, onDelete, onCycleCategory }) {
       onPointerLeave={() => setPressed(false)}
     >
       {/* Checkbox */}
-      <button
-        onClick={() => onToggle(item.id)}
-        style={{
-          width: 22, height: 22, borderRadius: 6, flexShrink: 0,
-          border: '1.5px solid', cursor: 'pointer',
-          background: item.done ? (color || 'var(--fg)') : 'transparent',
-          borderColor: item.done ? (color || 'var(--fg)') : (color || 'var(--border)'),
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          transition: 'all 0.15s',
-        }}
-      >
+      <button onClick={() => onToggle(item.id)} style={{
+        width: 22, height: 22, borderRadius: 6, flexShrink: 0,
+        border: '1.5px solid', cursor: 'pointer',
+        background: item.done ? (color || 'var(--fg)') : 'transparent',
+        borderColor: item.done ? (color || 'var(--fg)') : (color || 'var(--border)'),
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'all 0.15s',
+      }}>
         {item.done && <span style={{ color: '#fff', fontSize: 13, lineHeight: 1 }}>✓</span>}
       </button>
 
-      {/* Text */}
-      <span style={{
-        flex: 1, fontSize: 14, lineHeight: 1.4, color: 'var(--fg)',
-        textDecoration: item.done ? 'line-through' : 'none',
-        wordBreak: 'break-word',
-      }}>
-        {item.text}
-      </span>
+      {/* Text + due date */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          fontSize: 14, lineHeight: 1.4, color: 'var(--fg)',
+          textDecoration: item.done ? 'line-through' : 'none',
+          wordBreak: 'break-word',
+        }}>{item.text}</div>
+        {dueFmt && (
+          <div style={{ fontSize: 11, marginTop: 1, color: dateColor }}>{dueFmt.label}</div>
+        )}
+      </div>
+
+      {/* Due date picker trigger */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+        <div style={{ position: 'relative' }}>
+          <span style={{
+            fontSize: 12, display: 'block', pointerEvents: 'none',
+            color: 'var(--fg-muted)', opacity: item.dueDate ? 0.5 : 0.25,
+          }}>◷</span>
+          <input type="date" value={item.dueDate || ''} onChange={e => onSetDueDate(item.id, e.target.value || null)}
+            style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+        </div>
+        {item.dueDate && (
+          <button onClick={e => { e.stopPropagation(); onSetDueDate(item.id, null); }} style={{
+            background: 'none', border: 'none', fontSize: 11, color: 'var(--fg-muted)',
+            cursor: 'pointer', padding: 0, opacity: 0.5, lineHeight: 1,
+          }}>×</button>
+        )}
+      </div>
 
       {/* Category dot */}
       <button onClick={() => onCycleCategory(item.id)} style={{
