@@ -182,8 +182,8 @@ function RoutineRow({ routine, onToggleToday, onEdit, onDelete }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 12,
-      padding: '14px 0', borderBottom: '1px solid var(--border)',
-      opacity: (!isScheduledToday && !isDone) ? 0.4 : 1,
+      padding: '18px 0', borderBottom: '1px solid var(--border)',
+      opacity: (!isScheduledToday && !isDone) ? 0.3 : 1,
     }}>
       {/* Check circle */}
       <button onClick={() => isScheduledToday && onToggleToday(routine.id)} style={{
@@ -282,12 +282,12 @@ function Routines() {
   const doneToday  = doneDaily + doneWeekly;
 
   return (
-    <div style={{ padding: '16px 16px 40px' }}>
+    <div style={{ padding: '20px 20px 60px' }}>
       {/* Add bar */}
       <div style={{
         display: 'flex', gap: 8, alignItems: 'center',
         background: 'var(--surface)', border: '1px solid var(--border)',
-        borderRadius: 12, padding: '10px 14px', marginBottom: 16,
+        borderRadius: 14, padding: '10px 12px', marginBottom: 24,
       }}>
         <span style={{ color: 'var(--fg-muted)', fontSize: 14, flexShrink: 0 }}>○</span>
         <span style={{ flex: 1, fontSize: 14, lineHeight: 1, color: 'var(--fg-muted)', cursor: 'pointer', userSelect: 'none' }}
@@ -302,37 +302,35 @@ function Routines() {
       {/* Today summary */}
       {todayRoutines.length > 0 && (
         <div style={{
-          background: 'var(--surface)', border: '1px solid var(--border)',
-          borderRadius: 12, padding: '14px 16px', marginBottom: 20,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          marginBottom: 28, padding: '0 2px',
         }}>
           <div>
-            <div style={{ fontSize: 13, color: 'var(--fg-muted)', marginBottom: 6 }}>
+            <div style={{ fontSize: 11, color: 'var(--fg-muted)', opacity: 0.5, marginBottom: 8 }}>
               {DAY_NAMES[todayDayIdx]}, {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
             </div>
-            <div style={{ display: 'flex', gap: 14, alignItems: 'baseline' }}>
+            <div style={{ display: 'flex', gap: 16, alignItems: 'baseline' }}>
               {dailyRoutines.length > 0 && (
                 <div>
-                  <span style={{ fontSize: 20, fontWeight: 700 }}>{doneDaily}/{dailyRoutines.length}</span>
-                  <span style={{ fontSize: 11, color: 'var(--fg-muted)', marginLeft: 4 }}>daily</span>
+                  <span style={{ fontSize: 28, fontWeight: 300, letterSpacing: '-0.02em' }}>{doneDaily}/{dailyRoutines.length}</span>
+                  <span style={{ fontSize: 11, color: 'var(--fg-muted)', marginLeft: 5, opacity: 0.6 }}>daily</span>
                 </div>
               )}
               {weeklyRoutines.length > 0 && (
                 <div>
-                  <span style={{ fontSize: 20, fontWeight: 700 }}>{doneWeekly}/{weeklyRoutines.length}</span>
-                  <span style={{ fontSize: 11, color: 'var(--fg-muted)', marginLeft: 4 }}>weekly</span>
+                  <span style={{ fontSize: 28, fontWeight: 300, letterSpacing: '-0.02em' }}>{doneWeekly}/{weeklyRoutines.length}</span>
+                  <span style={{ fontSize: 11, color: 'var(--fg-muted)', marginLeft: 5, opacity: 0.6 }}>weekly</span>
                 </div>
               )}
             </div>
           </div>
-          {/* Mini progress arc via SVG */}
-          <svg width="48" height="48" viewBox="0 0 48 48">
-            <circle cx="24" cy="24" r="20" fill="none" stroke="var(--border)" strokeWidth="3" />
-            <circle cx="24" cy="24" r="20" fill="none" stroke="var(--fg)" strokeWidth="3"
-              strokeDasharray={`${(doneToday / todayRoutines.length) * 125.6} 125.6`}
-              strokeLinecap="round" transform="rotate(-90 24 24)" style={{ transition: 'stroke-dasharray 0.4s' }}
+          <svg width="52" height="52" viewBox="0 0 52 52">
+            <circle cx="26" cy="26" r="22" fill="none" stroke="var(--border)" strokeWidth="2.5" />
+            <circle cx="26" cy="26" r="22" fill="none" stroke="var(--fg)" strokeWidth="2.5"
+              strokeDasharray={`${(doneToday / todayRoutines.length) * 138.2} 138.2`}
+              strokeLinecap="round" transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.4s', opacity: 0.7 }}
             />
-            <text x="24" y="28" textAnchor="middle" fontSize="11" fontWeight="700" fill="var(--fg)">
+            <text x="26" y="30" textAnchor="middle" fontSize="11" fontWeight="400" fill="var(--fg)" opacity="0.6">
               {Math.round((doneToday / todayRoutines.length) * 100)}%
             </text>
           </svg>
@@ -340,16 +338,15 @@ function Routines() {
       )}
 
       {items.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--fg-muted)' }}>
-          <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.3 }}>○</div>
-          <div style={{ fontSize: 14 }}>No routines yet</div>
+        <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--fg-muted)' }}>
+          <div style={{ fontSize: 32, marginBottom: 16, opacity: 0.2 }}>○</div>
+          <div style={{ fontSize: 13, opacity: 0.5 }}>No routines yet</div>
         </div>
       )}
 
       {/* Today's routines */}
       {todayRoutines.length > 0 && (
         <div style={{ marginBottom: 8 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--fg-muted)', marginBottom: 4 }}>Today</div>
           {todayRoutines.map(r => (
             <RoutineRow key={r.id} routine={r} onToggleToday={handleToggleToday} onEdit={r => setModal(r)} onDelete={handleDelete} />
           ))}
@@ -358,8 +355,8 @@ function Routines() {
 
       {/* Other routines */}
       {otherRoutines.length > 0 && (
-        <div style={{ marginTop: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--fg-muted)', marginBottom: 4 }}>Other days</div>
+        <div style={{ marginTop: 36 }}>
+          <div style={{ fontSize: 11, color: 'var(--fg-muted)', opacity: 0.5, marginBottom: 8, paddingLeft: 2 }}>other days</div>
           {otherRoutines.map(r => (
             <RoutineRow key={r.id} routine={r} onToggleToday={handleToggleToday} onEdit={r => setModal(r)} onDelete={handleDelete} />
           ))}

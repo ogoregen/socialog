@@ -206,7 +206,7 @@ function QuickAdd({ onAdd }) {
     <form onSubmit={handleSubmit} style={{
       display: 'flex', gap: 8, alignItems: 'center',
       background: 'var(--surface)', border: '1px solid var(--border)',
-      borderRadius: 12, padding: '10px 14px', marginBottom: 16,
+      borderRadius: 14, padding: '10px 12px', marginBottom: 20,
     }}>
       <span style={{ color: 'var(--fg-muted)', fontSize: 14, flexShrink: 0 }}>★</span>
       <input
@@ -353,8 +353,8 @@ function BookmarkCard({ bm, onEdit, onDelete }) {
 
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: 12,
-      padding: '12px 0', borderBottom: '1px solid var(--border)',
+      display: 'flex', alignItems: 'center', gap: 14,
+      padding: '16px 0', borderBottom: '1px solid var(--border)',
     }}>
       {/* Icon or tiny cover */}
       <div style={{
@@ -444,17 +444,17 @@ function Bookmarks() {
   });
 
   return (
-    <div style={{ padding: '16px 16px 40px' }}>
+    <div style={{ padding: '20px 20px 60px' }}>
       <QuickAdd onAdd={handleAdd} />
 
       {/* Type filter pills */}
-      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 4 }}>
+      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 8 }}>
         {[['all','All'], ...Object.entries(BOOKMARK_TYPES).map(([k,t]) => [k, t.label])].map(([key, label]) => (
           <button key={key} onClick={() => setTypeFilter(key)} style={{
-            padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 500,
+            padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500,
             cursor: 'pointer', border: '1px solid', whiteSpace: 'nowrap', flexShrink: 0,
             background: typeFilter === key ? 'var(--fg)' : 'transparent',
-            color: typeFilter === key ? 'var(--bg)' : 'var(--fg)',
+            color: typeFilter === key ? 'var(--bg)' : 'var(--fg-muted)',
             borderColor: typeFilter === key ? 'var(--fg)' : 'var(--border)',
             transition: 'all 0.15s',
           }}>
@@ -464,13 +464,13 @@ function Bookmarks() {
       </div>
 
       {/* Status filter */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 4 }}>
+      <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
         {[['all','All'], ['want to try','Want'], ['in progress','Doing'], ['done','Done']].map(([key, label]) => {
           const active = filter === key;
           const cc = STATUS_COLORS[key];
           return (
           <button key={key} onClick={() => setFilter(key)} style={{
-            padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600,
+            padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500,
             cursor: 'pointer', border: '1px solid',
             background: active ? cc : 'transparent',
             color: active ? '#fff' : 'var(--fg-muted)',
@@ -488,9 +488,9 @@ function Bookmarks() {
       </div>
 
       {filtered.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--fg-muted)' }}>
-          <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.3 }}>★</div>
-          <div style={{ fontSize: 14 }}>Paste a link above to save it</div>
+        <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--fg-muted)' }}>
+          <div style={{ fontSize: 32, marginBottom: 16, opacity: 0.2 }}>★</div>
+          <div style={{ fontSize: 13, opacity: 0.5 }}>Paste a link to save it</div>
         </div>
       )}
 

@@ -112,12 +112,12 @@ function Todos() {
   const addDueFmt = formatDueDate(addDue);
 
   return (
-    <div style={{ padding: '16px 16px 40px' }}>
+    <div style={{ padding: '20px 20px 60px' }}>
       {/* Add input */}
       <div style={{
         display: 'flex', gap: 8, alignItems: 'center',
         background: 'var(--surface)', border: '1px solid var(--border)',
-        borderRadius: 12, padding: '10px 14px', marginBottom: 12,
+        borderRadius: 14, padding: '10px 12px', marginBottom: 20,
       }}>
         <span style={{ color: 'var(--fg-muted)', fontSize: 14, flexShrink: 0 }}>✓</span>
         <input
@@ -169,23 +169,23 @@ function Todos() {
 
       {/* Category filter pills */}
       {usedCats.length > 0 && (
-        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 12 }}>
+        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 20 }}>
           {[null, ...usedCats].map(c => {
             const isAll = c === null;
             const active = catFilter === (isAll ? null : c.id);
             const cc = isAll ? null : c.color;
             return (
               <button key={isAll ? 'all' : c.id} onClick={() => setCatFilter(isAll ? null : c.id)} style={{
-                padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 500,
+                padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500,
                 cursor: 'pointer', border: '1px solid', whiteSpace: 'nowrap', flexShrink: 0,
                 display: 'flex', alignItems: 'center', gap: 5,
                 background: active ? (cc || 'var(--fg)') : 'transparent',
-                color: active ? '#fff' : 'var(--fg)',
+                color: active ? '#fff' : 'var(--fg-muted)',
                 borderColor: active ? (cc || 'var(--fg)') : 'var(--border)',
                 transition: 'all 0.15s',
               }}>
                 {!isAll && <span style={{
-                  width: 7, height: 7, borderRadius: '50%', flexShrink: 0, display: 'inline-block',
+                  width: 6, height: 6, borderRadius: '50%', flexShrink: 0, display: 'inline-block',
                   background: active ? 'rgba(255,255,255,0.8)' : c.color,
                 }} />}
                 {isAll ? 'All' : c.label}
@@ -197,9 +197,9 @@ function Todos() {
 
       {/* Active tasks — bucketed by time */}
       {active.length === 0 && done.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--fg-muted)' }}>
-          <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.3 }}>✓</div>
-          <div style={{ fontSize: 14 }}>Nothing to do — add a task above</div>
+        <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--fg-muted)' }}>
+          <div style={{ fontSize: 32, marginBottom: 16, opacity: 0.2 }}>✓</div>
+          <div style={{ fontSize: 13, opacity: 0.5 }}>Nothing to do</div>
         </div>
       )}
 
@@ -207,11 +207,11 @@ function Todos() {
         const tasks = shownActive.filter(t => getBucket(t.dueDate) === bucket.id);
         if (!tasks.length) return null;
         return (
-          <div key={bucket.id} style={{ marginTop: bi === 0 ? 0 : 20 }}>
+          <div key={bucket.id} style={{ marginTop: bi === 0 ? 0 : 32 }}>
             <div style={{
-              fontSize: 11, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
-              color: bucket.color || 'var(--fg-muted)', marginBottom: 2, paddingBottom: 4,
-              borderBottom: '1px solid var(--border)',
+              fontSize: 11, fontWeight: 500,
+              color: bucket.color || 'var(--fg-muted)', opacity: bucket.color ? 1 : 0.5,
+              marginBottom: 8, paddingLeft: 2,
             }}>{bucket.label}</div>
             {tasks.map(t => (
               <TodoRow key={t.id} item={t} onToggle={toggleDone} onDelete={deleteItem} onCycleCategory={cycleCategory} onSetDueDate={setDueDate} />
@@ -222,16 +222,15 @@ function Todos() {
 
       {/* Done section */}
       {shownDone.length > 0 && (
-        <div style={{ marginTop: 28 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em',
-              textTransform: 'uppercase', color: 'var(--fg-muted)' }}>
-              Done ({shownDone.length})
+        <div style={{ marginTop: 40 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--fg-muted)', opacity: 0.5 }}>
+              done · {shownDone.length}
             </span>
             <button onClick={clearDone} style={{
-              background: 'none', border: 'none', fontSize: 12,
-              color: 'var(--fg-muted)', cursor: 'pointer',
-            }}>Clear all</button>
+              background: 'none', border: 'none', fontSize: 11,
+              color: 'var(--fg-muted)', cursor: 'pointer', opacity: 0.5,
+            }}>clear</button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {shownDone.map(t => (
@@ -254,11 +253,10 @@ function TodoRow({ item, onToggle, onDelete, onCycleCategory, onSetDueDate }) {
     <div
       style={{
         display: 'flex', alignItems: 'center', gap: 12,
-        padding: '12px 4px 12px 8px',
+        padding: '16px 0',
         borderBottom: '1px solid var(--border)',
-        borderLeft: `3px solid ${color || 'transparent'}`,
-        opacity: item.done ? 0.45 : 1,
-        transform: pressed ? 'scale(0.98)' : 'scale(1)',
+        opacity: item.done ? 0.35 : 1,
+        transform: pressed ? 'scale(0.99)' : 'scale(1)',
         transition: 'transform 0.1s, opacity 0.2s',
       }}
       onPointerDown={() => setPressed(true)}

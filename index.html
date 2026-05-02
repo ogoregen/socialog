@@ -17,23 +17,23 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        oklch(0.975 0.008 80);
-      --surface:   oklch(0.96  0.007 80);
-      --border:    oklch(0.88  0.006 80);
+      --bg:        oklch(0.980 0.006 80);
+      --surface:   oklch(0.970 0.005 80);
+      --border:    oklch(0.92  0.004 80);
       --fg:        oklch(0.13  0.010 80);
-      --fg-muted:  oklch(0.50  0.008 80);
+      --fg-muted:  oklch(0.55  0.006 80);
       --accent:    oklch(0.13  0.010 80);
       --font:      'Geist', 'Helvetica Neue', sans-serif;
       --mono:      'Geist Mono', monospace;
     }
 
     [data-theme="dark"] {
-      --bg:        oklch(0.10  0.010 80);
-      --surface:   oklch(0.14  0.010 80);
-      --border:    oklch(0.22  0.010 80);
-      --fg:        oklch(0.95  0.008 80);
-      --fg-muted:  oklch(0.58  0.008 80);
-      --accent:    oklch(0.95  0.008 80);
+      --bg:        oklch(0.10  0.008 80);
+      --surface:   oklch(0.13  0.008 80);
+      --border:    oklch(0.20  0.008 80);
+      --fg:        oklch(0.95  0.006 80);
+      --fg-muted:  oklch(0.52  0.006 80);
+      --accent:    oklch(0.95  0.006 80);
     }
 
     html, body, #root {
@@ -153,16 +153,12 @@
             padding: 'env(safe-area-inset-top, 0px) 20px 0',
             flexShrink: 0,
           }}>
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '16px 0 12px', borderBottom: '1px solid var(--border)',
-            }}>
-              <span onClick={() => setTab('todos')} style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.02em', fontFamily: 'var(--mono)', cursor: 'pointer' }}>
-                socialog
-              </span>
-                  <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--fg)' }}>
-                  {PAGE_TITLES[tab]}
-              </span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px 0 16px' }}>
+              <span onClick={() => setTab('todos')} style={{
+                fontSize: 12, fontWeight: 400, letterSpacing: '0.12em',
+                fontFamily: 'var(--mono)', cursor: 'pointer',
+                color: 'var(--fg-muted)', opacity: 0.5, userSelect: 'none',
+              }}>socialog</span>
             </div>
           </div>
 
@@ -176,9 +172,9 @@
 
           {/* ── Bottom tab bar ── */}
           <nav style={{
-            display: 'flex', borderTop: '1px solid var(--border)',
-            background: 'var(--bg)', flexShrink: 0,
-            paddingBottom: 'env(safe-area-inset-bottom, 12px)',
+            display: 'flex', background: 'var(--bg)', flexShrink: 0,
+            borderTop: '1px solid var(--border)',
+            paddingBottom: 'env(safe-area-inset-bottom, 16px)',
           }}>
             {TABS.map(t => {
               const active = tab === t.id;
@@ -186,27 +182,20 @@
               return (
                 <button key={t.id} onClick={() => setTab(t.id)} style={{
                   flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-                  gap: 3, padding: '10px 0 6px', background: 'none', border: 'none',
-                  cursor: 'pointer', color: active ? 'var(--fg)' : 'var(--fg-muted)',
-                  transition: 'color 0.15s', position: 'relative',
+                  padding: '14px 0 10px', background: 'none', border: 'none',
+                  cursor: 'pointer', position: 'relative',
                 }}>
-                  {/* Icon */}
+                  {active && <span style={{
+                    position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+                    width: 20, height: 2, background: 'var(--fg)', borderRadius: 1,
+                  }} />}
                   <span style={{
-                    fontSize: 18, lineHeight: 1,
-                    opacity: active ? 1 : 0.45,
-                    transition: 'opacity 0.15s',
-                    transform: active ? 'scale(1.1)' : 'scale(1)',
-                    display: 'inline-block', transition: 'all 0.15s',
-                  }}>{t.icon}</span>
-                  {/* Label */}
-                  <span style={{
-                    fontSize: 10, fontWeight: active ? 600 : 400,
-                    letterSpacing: '0.04em', textTransform: 'uppercase',
+                    fontSize: 11, fontWeight: active ? 600 : 400, letterSpacing: '0.04em',
+                    color: active ? 'var(--fg)' : 'var(--fg-muted)', transition: 'all 0.15s',
                   }}>{t.label}</span>
-                  {/* Badge */}
                   {badge > 0 && (
                     <span style={{
-                      position: 'absolute', top: 6, right: '50%', marginRight: -18,
+                      position: 'absolute', top: 8, right: '50%', marginRight: -20,
                       background: 'var(--fg)', color: 'var(--bg)',
                       fontSize: 9, fontWeight: 700, borderRadius: 10,
                       padding: '1px 5px', lineHeight: 1.4,
