@@ -22,7 +22,7 @@ const TYPE_RULES = [
   // Book
   { pattern: /goodreads\.com|books\.google\.com|openlibrary\.org|audible\.com|librarything\.com/, type: 'book' },
   // Place
-  { pattern: /maps\.google\.com|yelp\.com|tripadvisor\.com|foursquare\.com|opentable\.com|maps\.apple\.com/, type: 'place' },
+  { pattern: /maps\.google\.com|maps\.app\.goo\.gl|share\.google|goo\.gl\/maps|yelp\.com|tripadvisor\.com|foursquare\.com|opentable\.com|maps\.apple\.com/, type: 'place' },
   // Recipe
   { pattern: /allrecipes\.com|food\.com|seriouseats\.com|bonappetit\.com|epicurious\.com|cooking\.nytimes\.com|tasty\.co/, type: 'recipe' },
   // Product
