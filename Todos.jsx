@@ -24,10 +24,24 @@ function formatDueDate(iso) {
   const due = new Date(iso + 'T00:00:00');
   const now = new Date(); now.setHours(0, 0, 0, 0);
   const diff = Math.round((due - now) / 86400000);
-  if (diff < 0)  return { label: due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · overdue', overdue: true, soon: false };
-  if (diff === 0) return { label: 'Today', overdue: false, soon: true };
-  if (diff === 1) return { label: 'Tomorrow', overdue: false, soon: false };
-  return { label: due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), overdue: false, soon: false };
+  if (diff < 0) {
+    const n = Math.abs(diff);
+    const label = n < 7 ? `${n}d overdue` : n < 30 ? `${Math.floor(n / 7)}w overdue` : `${Math.floor(n / 30)}mo overdue`;
+    return { label, overdue: true, today: false, soon: false };
+  }
+  if (diff === 0) return { label: 'today',    overdue: false, today: true,  soon: false };
+  if (diff === 1) return { label: 'tomorrow', overdue: false, today: false, soon: true  };
+  if (diff < 7)  return { label: `${diff}d left`,              overdue: false, today: false, soon: false };
+  if (diff < 30) return { label: `${Math.floor(diff / 7)}w left`,  overdue: false, today: false, soon: false };
+  return         { label: `${Math.floor(diff / 30)}mo left`,   overdue: false, today: false, soon: false };
+}
+
+function duePillStyle(fmt) {
+  if (!fmt)        return { background: 'transparent', color: 'var(--fg-muted)', border: '1.5px solid var(--border)' };
+  if (fmt.overdue) return { background: '#ef4444', color: '#fff', border: 'none' };
+  if (fmt.today)   return { background: '#f59e0b', color: '#fff', border: 'none' };
+  if (fmt.soon)    return { background: '#3b82f6', color: '#fff', border: 'none' };
+  return           { background: 'var(--surface)', color: 'var(--fg-muted)', border: '1.5px solid var(--border)' };
 }
 
 function Todos() {
@@ -196,9 +210,9 @@ function Todos() {
 
 function TodoRow({ item, onToggle, onDelete, onCycleCategory, onSetDueDate }) {
   const [pressed, setPressed] = React.useState(false);
-  const color  = catColor(item.category);
-  const dueFmt = formatDueDate(item.dueDate);
-  const dateColor = dueFmt?.overdue ? '#ef4444' : dueFmt?.soon ? '#f59e0b' : 'var(--fg-muted)';
+  const color    = catColor(item.category);
+  const dueFmt   = formatDueDate(item.dueDate);
+  const pillStyle = duePillStyle(dueFmt);
 
   return (
     <div
@@ -227,25 +241,23 @@ function TodoRow({ item, onToggle, onDelete, onCycleCategory, onSetDueDate }) {
         {item.done && <span style={{ color: '#fff', fontSize: 13, lineHeight: 1 }}>✓</span>}
       </button>
 
-      {/* Text + due date */}
+      {/* Text */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
           fontSize: 14, lineHeight: 1.4, color: 'var(--fg)',
           textDecoration: item.done ? 'line-through' : 'none',
           wordBreak: 'break-word',
         }}>{item.text}</div>
-        {dueFmt && (
-          <div style={{ fontSize: 11, marginTop: 1, color: dateColor }}>{dueFmt.label}</div>
-        )}
       </div>
 
-      {/* Due date picker trigger */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+      {/* Due date pill — tap to pick, × to clear */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
         <div style={{ position: 'relative' }}>
           <span style={{
-            fontSize: 12, display: 'block', pointerEvents: 'none',
-            color: 'var(--fg-muted)', opacity: item.dueDate ? 0.5 : 0.25,
-          }}>◷</span>
+            display: 'block', padding: '3px 8px', borderRadius: 20,
+            fontSize: 11, fontWeight: 600, pointerEvents: 'none', whiteSpace: 'nowrap',
+            ...pillStyle,
+          }}>{dueFmt ? dueFmt.label : '◷'}</span>
           <input type="date" value={item.dueDate || ''} onChange={e => onSetDueDate(item.id, e.target.value || null)}
             style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
         </div>
