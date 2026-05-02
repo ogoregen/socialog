@@ -354,9 +354,20 @@ function Routines() {
       )}
 
       {/* Today's routines */}
-      {todayRoutines.length > 0 && (
+      {dailyRoutines.length > 0 && (
         <div style={{ marginBottom: 8 }}>
-          {todayRoutines.map(r => (
+          <div style={{ fontSize: 11, color: 'var(--fg-muted)', opacity: 0.5, marginBottom: 8, paddingLeft: 2 }}>Today</div>
+          {dailyRoutines.map(r => (
+            <RoutineRow key={r.id} routine={r} onToggleToday={handleToggleToday} onEdit={r => setModal(r)} onDelete={handleDelete} />
+          ))}
+        </div>
+      )}
+
+      {/* Weekly routines */}
+      {weeklyRoutines.length > 0 && (
+        <div style={{ marginTop: dailyRoutines.length > 0 ? 28 : 0 }}>
+          <div style={{ fontSize: 11, color: 'var(--fg-muted)', opacity: 0.5, marginBottom: 8, paddingLeft: 2 }}>This week</div>
+          {weeklyRoutines.map(r => (
             <RoutineRow key={r.id} routine={r} onToggleToday={handleToggleToday} onEdit={r => setModal(r)} onDelete={handleDelete} />
           ))}
         </div>
@@ -364,8 +375,8 @@ function Routines() {
 
       {/* Other routines */}
       {otherRoutines.length > 0 && (
-        <div style={{ marginTop: 36 }}>
-          <div style={{ fontSize: 11, color: 'var(--fg-muted)', opacity: 0.5, marginBottom: 8, paddingLeft: 2 }}>other days</div>
+        <div style={{ marginTop: (dailyRoutines.length > 0 || weeklyRoutines.length > 0) ? 28 : 0 }}>
+          <div style={{ fontSize: 11, color: 'var(--fg-muted)', opacity: 0.5, marginBottom: 8, paddingLeft: 2 }}>Other days</div>
           {otherRoutines.map(r => (
             <RoutineRow key={r.id} routine={r} onToggleToday={handleToggleToday} onEdit={r => setModal(r)} onDelete={handleDelete} />
           ))}
