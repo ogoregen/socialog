@@ -132,7 +132,7 @@ function Todos() {
           }}
         />
         {/* Category + due date */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           <button onClick={() => setAddCat(nextCat(addCat))} title={addCat ? CATEGORIES.find(c => c.id === addCat)?.label : 'No category'} style={{
             width: 30, height: 30, borderRadius: 8, flexShrink: 0, padding: 0, cursor: 'pointer',
             background: addColor || 'var(--border)', border: 'none',
@@ -141,20 +141,22 @@ function Todos() {
             <span style={{ width: 10, height: 10, borderRadius: '50%', display: 'block',
               background: addColor ? 'rgba(255,255,255,0.8)' : 'var(--fg-muted)', opacity: addColor ? 1 : 0.4 }} />
           </button>
-          <div style={{ position: 'relative', width: 30, height: 30, flexShrink: 0,
-            background: 'var(--border)', borderRadius: 8,
+          <div style={{ position: 'relative', height: 30, minWidth: 30, flexShrink: 0,
+            background: 'var(--border)', borderRadius: 8, padding: '0 10px',
             display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{
-              fontSize: addDue ? 10 : 14, pointerEvents: 'none',
-              color: 'var(--fg-muted)', opacity: addDue ? 1 : 0.6, whiteSpace: 'nowrap',
+              fontSize: 11, pointerEvents: 'none', whiteSpace: 'nowrap',
+              color: 'var(--fg-muted)', opacity: addDue ? 1 : 0.6,
             }}>{addDueFmt ? addDueFmt.label : '◷'}</span>
             <input type="date" value={addDue || ''} onChange={e => setAddDue(e.target.value || null)}
               style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
           </div>
           {addDue && (
             <button onClick={() => setAddDue(null)} style={{
-              background: 'none', border: 'none', fontSize: 12, color: 'var(--fg-muted)',
-              cursor: 'pointer', padding: 0, opacity: 0.6, lineHeight: 1,
+              background: 'none', border: 'none', color: 'var(--fg-muted)',
+              cursor: 'pointer', opacity: 0.6, flexShrink: 0,
+              width: 30, height: 30, fontSize: 18,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>×</button>
           )}
         </div>
@@ -285,10 +287,10 @@ function TodoRow({ item, onToggle, onDelete, onCycleCategory, onSetDueDate }) {
       </div>
 
       {/* Due date pill — tap to pick, × to clear */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-        <div style={{ position: 'relative' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+        <div style={{ position: 'relative', minHeight: 30, display: 'flex', alignItems: 'center' }}>
           <span style={{
-            display: 'block', padding: '3px 8px', borderRadius: 20,
+            display: 'block', padding: '5px 10px', borderRadius: 20,
             fontSize: 11, fontWeight: 600, pointerEvents: 'none', whiteSpace: 'nowrap',
             ...pillStyle,
           }}>{dueFmt ? dueFmt.label : '◷'}</span>
@@ -297,15 +299,17 @@ function TodoRow({ item, onToggle, onDelete, onCycleCategory, onSetDueDate }) {
         </div>
         {item.dueDate && (
           <button onClick={e => { e.stopPropagation(); onSetDueDate(item.id, null); }} style={{
-            background: 'none', border: 'none', fontSize: 11, color: 'var(--fg-muted)',
-            cursor: 'pointer', padding: 0, opacity: 0.5, lineHeight: 1,
+            background: 'none', border: 'none', color: 'var(--fg-muted)',
+            cursor: 'pointer', opacity: 0.5, flexShrink: 0,
+            width: 30, height: 30, fontSize: 16,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>×</button>
         )}
       </div>
 
       {/* Category dot */}
       <button onClick={() => onCycleCategory(item.id)} style={{
-        width: 22, height: 22, borderRadius: 6, flexShrink: 0, padding: 0,
+        width: 30, height: 30, borderRadius: 8, flexShrink: 0, padding: 0,
         background: color || 'transparent',
         border: `1.5px solid ${color || 'var(--border)'}`,
         cursor: 'pointer', opacity: color ? 1 : 0.35,
@@ -314,8 +318,8 @@ function TodoRow({ item, onToggle, onDelete, onCycleCategory, onSetDueDate }) {
       {/* Delete */}
       <button onClick={() => onDelete(item.id)} style={{
         background: 'none', border: 'none', color: 'var(--fg-muted)',
-        fontSize: 16, cursor: 'pointer', padding: '0 4px', opacity: 0.5,
-        flexShrink: 0,
+        fontSize: 18, cursor: 'pointer', opacity: 0.5, flexShrink: 0,
+        width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>×</button>
     </div>
   );
