@@ -182,23 +182,25 @@ function RoutineRow({ routine, onToggleToday, onEdit, onDelete }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 12,
-      padding: '18px 0', borderBottom: '1px solid var(--border)',
-      opacity: (!isScheduledToday && !isDone) ? 0.65 : 1,
+      padding: '14px 16px', marginBottom: 8,
+      background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14,
+      opacity: (!isScheduledToday && !isDone) ? 0.6 : 1,
+      transition: 'opacity 0.2s',
     }}>
       {/* Check circle */}
       <button onClick={() => isScheduledToday && onToggleToday(routine.id)} style={{
-        width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+        width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
         border: '1.5px solid', cursor: isScheduledToday ? 'pointer' : 'default',
-        background: isDone ? 'var(--fg)' : 'transparent',
-        borderColor: isDone ? 'var(--fg)' : 'var(--border)',
+        background: isDone ? '#22c55e' : 'transparent',
+        borderColor: isDone ? '#22c55e' : 'var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'all 0.2s',
       }}>
-        {isDone && <span style={{ color: 'var(--bg)', fontSize: 14 }}>✓</span>}
+        {isDone && <span style={{ color: '#fff', fontSize: 14 }}>✓</span>}
       </button>
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 15, fontWeight: 500, marginBottom: 3 }}>{routine.title}</div>
+        <div style={{ fontSize: 15, fontWeight: 500, marginBottom: 4, opacity: isDone ? 0.5 : 1 }}>{routine.title}</div>
         {isWeekly ? (
           <div style={{ fontSize: 11, color: 'var(--fg-muted)' }}>
             weekly · any day · {TIME_ICONS[routine.timeOfDay]} {routine.timeOfDay}
@@ -207,7 +209,7 @@ function RoutineRow({ routine, onToggleToday, onEdit, onDelete }) {
           <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
             {WEEK_ORDER.map(i => (
               <span key={i} style={{
-                width: 18, height: 18, borderRadius: 4, fontSize: 9, fontWeight: 700,
+                width: 20, height: 20, borderRadius: 6, fontSize: 9, fontWeight: 700,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 background: routine.days.includes(i)
                   ? (i === todayDayIdx ? 'var(--fg)' : 'var(--border)')
@@ -227,7 +229,7 @@ function RoutineRow({ routine, onToggleToday, onEdit, onDelete }) {
       {/* Streak */}
       {streak > 0 && (
         <div style={{ textAlign: 'center', flexShrink: 0 }}>
-          <div style={{ fontSize: 16, fontWeight: 700 }}>{streak}</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: streak >= 7 ? '#f59e0b' : 'var(--fg)' }}>{streak}</div>
           <div style={{ fontSize: 9, color: 'var(--fg-muted)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>streak</div>
         </div>
       )}
