@@ -137,10 +137,12 @@ function Todos() {
         />
         {/* Due date picker */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: 'relative', width: 30, height: 30, flexShrink: 0,
+            background: 'var(--border)', borderRadius: 8,
+            display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{
-              fontSize: 11, display: 'block', padding: '1px 0', pointerEvents: 'none',
-              color: 'var(--fg-muted)', opacity: addDue ? 1 : 0.4, whiteSpace: 'nowrap',
+              fontSize: addDue ? 10 : 14, pointerEvents: 'none',
+              color: 'var(--fg-muted)', opacity: addDue ? 1 : 0.6, whiteSpace: 'nowrap',
             }}>{addDueFmt ? addDueFmt.label : '◷'}</span>
             <input type="date" value={addDue || ''} onChange={e => setAddDue(e.target.value || null)}
               style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
