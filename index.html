@@ -190,17 +190,19 @@
                     width: 20, height: 2, background: 'var(--fg)', borderRadius: 1,
                   }} />}
                   <span style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
                     fontSize: 11, fontWeight: active ? 600 : 400, letterSpacing: '0.04em',
                     color: active ? 'var(--fg)' : 'var(--fg-muted)', transition: 'all 0.15s',
-                  }}>{t.label}</span>
-                  {badge > 0 && (
-                    <span style={{
-                      position: 'absolute', top: 8, right: '50%', marginRight: -20,
-                      background: 'var(--fg)', color: 'var(--bg)',
-                      fontSize: 9, fontWeight: 700, borderRadius: 10,
-                      padding: '1px 5px', lineHeight: 1.4,
-                    }}>{badge}</span>
-                  )}
+                  }}>
+                    {t.label}
+                    {badge > 0 && (
+                      <span style={{
+                        background: 'var(--fg-muted)', color: 'var(--bg)',
+                        fontSize: 9, fontWeight: 700, borderRadius: 10,
+                        padding: '1px 5px', lineHeight: 1.4, opacity: 0.6,
+                      }}>{badge}</span>
+                    )}
+                  </span>
                 </button>
               );
             })}

@@ -133,13 +133,17 @@ function Todos() {
         />
         {/* Category + due date */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          <button onClick={() => setAddCat(nextCat(addCat))} title={addCat ? CATEGORIES.find(c => c.id === addCat)?.label : 'No category'} style={{
-            width: 30, height: 30, borderRadius: 8, flexShrink: 0, padding: 0, cursor: 'pointer',
+          <button onClick={() => setAddCat(nextCat(addCat))} style={{
+            height: 30, borderRadius: 8, flexShrink: 0, padding: '0 10px', cursor: 'pointer',
             background: addColor || 'var(--border)', border: 'none',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            display: 'flex', alignItems: 'center', gap: 6,
           }}>
-            <span style={{ width: 10, height: 10, borderRadius: '50%', display: 'block',
-              background: addColor ? 'rgba(255,255,255,0.8)' : 'var(--fg-muted)', opacity: addColor ? 1 : 0.4 }} />
+            <span style={{ width: 7, height: 7, borderRadius: '50%', display: 'block', flexShrink: 0,
+              background: addColor ? 'rgba(255,255,255,0.8)' : 'var(--fg-muted)', opacity: addColor ? 1 : 0.5 }} />
+            <span style={{ fontSize: 11, color: addColor ? 'rgba(255,255,255,0.9)' : 'var(--fg-muted)',
+              whiteSpace: 'nowrap', opacity: addColor ? 1 : 0.6 }}>
+              {addCat ? CATEGORIES.find(c => c.id === addCat)?.label : 'category'}
+            </span>
           </button>
           <div style={{ position: 'relative', height: 30, minWidth: 30, flexShrink: 0,
             background: 'var(--border)', borderRadius: 8, padding: '0 10px',

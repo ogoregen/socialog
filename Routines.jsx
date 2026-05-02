@@ -301,39 +301,48 @@ function Routines() {
 
       {/* Today summary */}
       {todayRoutines.length > 0 && (
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          marginBottom: 28, padding: '0 2px',
-        }}>
-          <div>
-            <div style={{ fontSize: 11, color: 'var(--fg-muted)', opacity: 0.5, marginBottom: 8 }}>
-              {DAY_NAMES[todayDayIdx]}, {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
-            </div>
-            <div style={{ display: 'flex', gap: 16, alignItems: 'baseline' }}>
-              {dailyRoutines.length > 0 && (
-                <div>
-                  <span style={{ fontSize: 28, fontWeight: 300, letterSpacing: '-0.02em' }}>{doneDaily}/{dailyRoutines.length}</span>
-                  <span style={{ fontSize: 11, color: 'var(--fg-muted)', marginLeft: 5, opacity: 0.6 }}>daily</span>
-                </div>
-              )}
-              {weeklyRoutines.length > 0 && (
-                <div>
-                  <span style={{ fontSize: 28, fontWeight: 300, letterSpacing: '-0.02em' }}>{doneWeekly}/{weeklyRoutines.length}</span>
-                  <span style={{ fontSize: 11, color: 'var(--fg-muted)', marginLeft: 5, opacity: 0.6 }}>weekly</span>
-                </div>
-              )}
-            </div>
+        <div style={{ marginBottom: 28, padding: '0 2px' }}>
+          <div style={{ fontSize: 11, color: 'var(--fg-muted)', opacity: 0.5, marginBottom: 16 }}>
+            {DAY_NAMES[todayDayIdx]}, {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
           </div>
-          <svg width="52" height="52" viewBox="0 0 52 52">
-            <circle cx="26" cy="26" r="22" fill="none" stroke="var(--border)" strokeWidth="2.5" />
-            <circle cx="26" cy="26" r="22" fill="none" stroke="var(--fg)" strokeWidth="2.5"
-              strokeDasharray={`${(doneToday / todayRoutines.length) * 138.2} 138.2`}
-              strokeLinecap="round" transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.4s', opacity: 0.7 }}
-            />
-            <text x="26" y="30" textAnchor="middle" fontSize="11" fontWeight="400" fill="var(--fg)" opacity="0.6">
-              {Math.round((doneToday / todayRoutines.length) * 100)}%
-            </text>
-          </svg>
+          <div style={{ display: 'flex', gap: 24 }}>
+            {dailyRoutines.length > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <svg width="52" height="52" viewBox="0 0 52 52" style={{ flexShrink: 0 }}>
+                  <circle cx="26" cy="26" r="22" fill="none" stroke="var(--border)" strokeWidth="2.5" />
+                  <circle cx="26" cy="26" r="22" fill="none" stroke="var(--fg)" strokeWidth="2.5"
+                    strokeDasharray={`${(doneDaily / dailyRoutines.length) * 138.2} 138.2`}
+                    strokeLinecap="round" transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.4s', opacity: 0.7 }}
+                  />
+                  <text x="26" y="30" textAnchor="middle" fontSize="11" fontWeight="400" fill="var(--fg)" opacity="0.6">
+                    {Math.round((doneDaily / dailyRoutines.length) * 100)}%
+                  </text>
+                </svg>
+                <div>
+                  <div style={{ fontSize: 24, fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 1 }}>{doneDaily}/{dailyRoutines.length}</div>
+                  <div style={{ fontSize: 11, color: 'var(--fg-muted)', opacity: 0.6, marginTop: 4 }}>today</div>
+                </div>
+              </div>
+            )}
+            {weeklyRoutines.length > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <svg width="52" height="52" viewBox="0 0 52 52" style={{ flexShrink: 0 }}>
+                  <circle cx="26" cy="26" r="22" fill="none" stroke="var(--border)" strokeWidth="2.5" />
+                  <circle cx="26" cy="26" r="22" fill="none" stroke="var(--fg)" strokeWidth="2.5"
+                    strokeDasharray={`${(doneWeekly / weeklyRoutines.length) * 138.2} 138.2`}
+                    strokeLinecap="round" transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.4s', opacity: 0.7 }}
+                  />
+                  <text x="26" y="30" textAnchor="middle" fontSize="11" fontWeight="400" fill="var(--fg)" opacity="0.6">
+                    {Math.round((doneWeekly / weeklyRoutines.length) * 100)}%
+                  </text>
+                </svg>
+                <div>
+                  <div style={{ fontSize: 24, fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 1 }}>{doneWeekly}/{weeklyRoutines.length}</div>
+                  <div style={{ fontSize: 11, color: 'var(--fg-muted)', opacity: 0.6, marginTop: 4 }}>this week</div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

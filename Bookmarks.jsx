@@ -458,7 +458,7 @@ function Bookmarks() {
             borderColor: typeFilter === key ? 'var(--fg)' : 'var(--border)',
             transition: 'all 0.15s',
           }}>
-            {key !== 'all' ? BOOKMARK_TYPES[key]?.icon + ' ' : ''}{label}
+            {label}
           </button>
         ))}
       </div>
