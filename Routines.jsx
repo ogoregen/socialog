@@ -290,10 +290,8 @@ function Routines() {
         borderRadius: 12, padding: '10px 14px', marginBottom: 16,
       }}>
         <span style={{ color: 'var(--fg-muted)', fontSize: 14, flexShrink: 0 }}>○</span>
-        <span style={{ flex: 1, fontSize: 14, color: 'var(--fg-muted)', cursor: 'pointer', userSelect: 'none' }}
-          onClick={() => setModal(emptyRoutine())}>
-          Add a routine…
-        </span>
+        <span style={{ flex: 1, fontSize: 14, lineHeight: 1, color: 'var(--fg-muted)', cursor: 'pointer', userSelect: 'none' }}
+          onClick={() => setModal(emptyRoutine())}>Add a routine…</span>
         <button onClick={() => setModal(emptyRoutine())} style={{
           background: 'var(--fg)', color: 'var(--bg)', border: 'none',
           borderRadius: 8, width: 30, height: 30, fontSize: 18, cursor: 'pointer',
