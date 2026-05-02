@@ -44,6 +44,27 @@ function duePillStyle(fmt) {
   return           { background: 'var(--surface)', color: 'var(--fg-muted)', border: '1.5px solid var(--border)' };
 }
 
+const BUCKETS = [
+  { id: 'overdue',  label: 'Overdue',    color: '#ef4444' },
+  { id: 'today',    label: 'Today',      color: '#f59e0b' },
+  { id: 'tomorrow', label: 'Tomorrow',   color: '#3b82f6' },
+  { id: 'week',     label: 'This week',  color: null },
+  { id: 'later',    label: 'Later',      color: null },
+  { id: 'someday',  label: 'Someday',    color: null },
+];
+
+function getBucket(iso) {
+  if (!iso) return 'someday';
+  const due = new Date(iso + 'T00:00:00');
+  const now = new Date(); now.setHours(0, 0, 0, 0);
+  const diff = Math.round((due - now) / 86400000);
+  if (diff < 0)  return 'overdue';
+  if (diff === 0) return 'today';
+  if (diff === 1) return 'tomorrow';
+  if (diff < 7)  return 'week';
+  return 'later';
+}
+
 function Todos() {
   const [items, setItems]         = React.useState(() => load('todos') || []);
   const [input, setInput]         = React.useState('');
@@ -170,7 +191,7 @@ function Todos() {
         </div>
       )}
 
-      {/* Active tasks */}
+      {/* Active tasks — bucketed by time */}
       {active.length === 0 && done.length === 0 && (
         <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--fg-muted)' }}>
           <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.3 }}>✓</div>
@@ -178,11 +199,22 @@ function Todos() {
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {shownActive.map(t => (
-          <TodoRow key={t.id} item={t} onToggle={toggleDone} onDelete={deleteItem} onCycleCategory={cycleCategory} onSetDueDate={setDueDate} />
-        ))}
-      </div>
+      {BUCKETS.map((bucket, bi) => {
+        const tasks = shownActive.filter(t => getBucket(t.dueDate) === bucket.id);
+        if (!tasks.length) return null;
+        return (
+          <div key={bucket.id} style={{ marginTop: bi === 0 ? 0 : 20 }}>
+            <div style={{
+              fontSize: 11, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
+              color: bucket.color || 'var(--fg-muted)', marginBottom: 2, paddingBottom: 4,
+              borderBottom: '1px solid var(--border)',
+            }}>{bucket.label}</div>
+            {tasks.map(t => (
+              <TodoRow key={t.id} item={t} onToggle={toggleDone} onDelete={deleteItem} onCycleCategory={cycleCategory} onSetDueDate={setDueDate} />
+            ))}
+          </div>
+        );
+      })}
 
       {/* Done section */}
       {shownDone.length > 0 && (
