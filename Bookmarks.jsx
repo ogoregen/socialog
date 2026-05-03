@@ -141,6 +141,27 @@ async function fetchSmartTitle(url) {
     } catch (e) {}
   }
 
+  // Spotify: Jina gets og:title (track/album) + og:image, page <title> has "Track - Artist | Spotify"
+  if (/spotify\.com/.test(url)) {
+    try {
+      const res = await fetch(`https://r.jina.ai/${url}`, {
+        headers: { 'X-Return-Format': 'html' },
+        signal: abortAfter(10000),
+      });
+      if (res.ok) {
+        const html = await res.text();
+        const parsed = parseTitleFromHtml(html);
+        if (parsed?.title) {
+          const ptMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+          const artist = ptMatch
+            ? (decodeHtmlEntities(ptMatch[1]).match(/^.+?[–\-]\s*(.+?)\s*[|·•]\s*Spotify/i) || [])[1]?.trim() || ''
+            : '';
+          return { ...parsed, ...(artist && { meta: { artist } }) };
+        }
+      }
+    } catch (e) {}
+  }
+
   const smart = extractSmartMeta(url);
   if (smart?.parseOembed) {
     try {
