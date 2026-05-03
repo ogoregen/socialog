@@ -69,20 +69,6 @@ function abortAfter(ms) {
   return c.signal;
 }
 
-function promiseAny(promises) {
-  return new Promise((resolve, reject) => {
-    let remaining = promises.length;
-    const errors = [];
-    if (!remaining) { reject(errors); return; }
-    promises.forEach((p, i) => {
-      Promise.resolve(p).then(resolve).catch(err => {
-        errors[i] = err;
-        if (--remaining === 0) reject(errors);
-      });
-    });
-  });
-}
-
 function extractSmartMeta(url) {
   try {
     const host = new URL(url).hostname.replace(/^www\./, '');
@@ -124,29 +110,42 @@ async function fetchSmartTitle(url) {
     const result = await fetchGoodreadsBook(url);
     if (result) return result;
   }
-  const smart = extractSmartMeta(url);
-  if (smart && smart.parseOembed) {
+
+  // GitHub repos: public API — no CORS proxy needed, returns clean title + owner avatar
+  const ghMatch = url.match(/github\.com\/([^/?#]+)\/([^/?#]+)/);
+  if (ghMatch) {
     try {
-      const res = await fetch(smart.fetchUrl, { signal: abortAfter(5000) });
+      const res = await fetch(`https://api.github.com/repos/${ghMatch[1]}/${ghMatch[2]}`, { signal: abortAfter(6000) });
+      if (res.ok) {
+        const d = await res.json();
+        if (d.full_name) return { title: d.full_name + (d.description ? ' — ' + d.description : ''), coverUrl: d.owner?.avatar_url || '' };
+      }
+    } catch (e) {}
+  }
+
+  const smart = extractSmartMeta(url);
+  if (smart?.parseOembed) {
+    try {
+      const res = await fetch(smart.fetchUrl, { signal: abortAfter(6000) });
       if (res.ok) {
         const data = await res.json();
         if (data.title) return { title: data.title, coverUrl: data.thumbnail_url || '' };
       }
     } catch (e) {}
   }
-  const tryProxy = async (fetcher) => {
-    const html = await fetcher();
-    if (!html) throw new Error('empty');
-    const parsed = parseTitleFromHtml(html);
-    if (!parsed?.title) throw new Error('no title');
-    return parsed;
-  };
+
+  // Jina reader: fetches the page's og:title + og:image without CORS restrictions
   try {
-    return await promiseAny([
-      tryProxy(async () => { const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, { signal: abortAfter(5000) }); return r.ok ? (await r.json()).contents || null : null; }),
-      tryProxy(async () => { const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { signal: abortAfter(5000) }); return r.ok ? r.text() : null; }),
-    ]);
+    const res = await fetch(`https://r.jina.ai/${url}`, {
+      headers: { 'X-Return-Format': 'html' },
+      signal: abortAfter(10000),
+    });
+    if (res.ok) {
+      const parsed = parseTitleFromHtml(await res.text());
+      if (parsed?.title) return parsed;
+    }
   } catch (e) {}
+
   return null;
 }
 
