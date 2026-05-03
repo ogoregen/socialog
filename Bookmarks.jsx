@@ -215,7 +215,7 @@ function QuickAdd({ onPreview }) {
   function handlePaste(e) {
     const pasted = e.clipboardData.getData('text').trim();
     if (/^https?:\/\//i.test(pasted) || /^[\w-]+\.\w{2,}\//.test(pasted)) {
-      e.preventDefault();
+      setUrl(pasted);
       doFetch(pasted);
     }
   }
