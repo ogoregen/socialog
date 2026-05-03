@@ -45,11 +45,12 @@ function RoutineModal({ routine, onSave, onClose }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 200,
-      display: 'flex', alignItems: 'flex-end',
+      display: 'flex', alignItems: 'flex-end', animation: 'backdrop-in 0.25s ease forwards',
     }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
         background: 'var(--bg)', borderRadius: '20px 20px 0 0', width: '100%',
         maxHeight: '85vh', overflowY: 'auto', padding: '0 0 40px',
+        animation: 'sheet-up 0.35s cubic-bezier(0.32,0.72,0,1) forwards',
       }}>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 4px' }}>
           <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border)' }}></div>
