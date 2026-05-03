@@ -158,13 +158,13 @@ function emptyBookmark(type = 'article', url = '') {
 }
 
 // ── Quick paste bar ───────────────────────────────────────────────────────────
-function QuickAdd({ onAdd }) {
+function QuickAdd({ onPreview }) {
   const [url, setUrl]         = React.useState('');
   const [loading, setLoading] = React.useState(false);
-  const savingRef = React.useRef(false); // guard against double-save
+  const savingRef = React.useRef(false);
   const inputRef  = React.useRef();
 
-  async function doSave(raw) {
+  async function doFetch(raw) {
     if (savingRef.current) return;
     const trimmed = raw.trim();
     if (!trimmed) return;
@@ -183,23 +183,22 @@ function QuickAdd({ onAdd }) {
     bm.coverUrl = result?.coverUrl || '';
     bm.meta.source = domain;
 
-    onAdd(bm);
     setLoading(false);
     savingRef.current = false;
-    inputRef.current?.focus();
+    onPreview(bm);
   }
 
   function handlePaste(e) {
     const pasted = e.clipboardData.getData('text').trim();
     if (/^https?:\/\//i.test(pasted) || /^[\w-]+\.\w{2,}\//.test(pasted)) {
       e.preventDefault();
-      doSave(pasted);
+      doFetch(pasted);
     }
   }
 
   function handleSubmit(e) {
     e.preventDefault();
-    doSave(url);
+    doFetch(url);
   }
 
   return (
@@ -231,7 +230,7 @@ function QuickAdd({ onAdd }) {
 }
 
 // ── Edit modal ────────────────────────────────────────────────────────────────
-function BookmarkModal({ bm, onSave, onClose }) {
+function BookmarkModal({ bm, isNew, onSave, onClose }) {
   const [form, setForm] = React.useState(bm);
   const typeInfo = BOOKMARK_TYPES[form.type];
 
@@ -261,7 +260,7 @@ function BookmarkModal({ bm, onSave, onClose }) {
           <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border)' }}></div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 16px' }}>
-          <span style={{ fontSize: 17, fontWeight: 600 }}>Edit bookmark</span>
+          <span style={{ fontSize: 17, fontWeight: 600 }}>{isNew ? 'Add bookmark' : 'Edit bookmark'}</span>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, color: 'var(--fg-muted)', cursor: 'pointer', lineHeight: 1, padding: 0 }}>×</button>
         </div>
 
@@ -340,7 +339,7 @@ function BookmarkModal({ bm, onSave, onClose }) {
             width: '100%', padding: '14px', borderRadius: 12, background: 'var(--fg)',
             color: 'var(--bg)', border: 'none', fontSize: 15, fontWeight: 600,
             cursor: 'pointer', marginTop: 4,
-          }}>Save</button>
+          }}>{isNew ? 'Save bookmark' : 'Save changes'}</button>
         </div>
       </div>
     </div>
@@ -420,19 +419,16 @@ function Bookmarks() {
 
   React.useEffect(() => { save('bookmarks', items); }, [items]);
 
-  function handleAdd(bm) {
-    setItems(prev => [bm, ...prev]);
-    showToast('Bookmark saved');
-  }
-
   function handleSave(bm) {
+    let isNew;
     setItems(prev => {
       const idx = prev.findIndex(b => b.id === bm.id);
-      if (idx >= 0) { const next = [...prev]; next[idx] = bm; return next; }
+      isNew = idx < 0;
+      if (!isNew) { const next = [...prev]; next[idx] = bm; return next; }
       return [bm, ...prev];
     });
     setModal(null);
-    showToast('Bookmark updated');
+    showToast(isNew ? 'Bookmark saved' : 'Bookmark updated');
   }
 
   function handleDelete(id) {
@@ -448,7 +444,7 @@ function Bookmarks() {
 
   return (
     <div style={{ padding: '20px 20px 60px' }}>
-      <QuickAdd onAdd={handleAdd} />
+      <QuickAdd onPreview={bm => setModal(bm)} />
 
       {/* Type filter pills */}
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 8 }}>
@@ -497,7 +493,7 @@ function Bookmarks() {
         </div>
       )}
 
-      {modal && <BookmarkModal bm={modal} onSave={handleSave} onClose={() => setModal(null)} />}
+      {modal && <BookmarkModal bm={modal} isNew={!items.find(b => b.id === modal.id)} onSave={handleSave} onClose={() => setModal(null)} />}
     </div>
   );
 }
