@@ -329,7 +329,6 @@ function Todos() {
           );
         })}
       </div>
-        </div>
       )}
 
       {/* Active tasks — bucketed by time */}
