@@ -182,7 +182,15 @@
         const cur = ids.indexOf(tab);
         const next = lastDx < 0 ? ids[cur + 1] : ids[cur - 1];
         if (next && (Math.abs(lastDx) > window.innerWidth * 0.35 || velocity > 0.5)) {
-          setTab(next); // React re-render transitions from drag position to new tab
+          // Scale duration to remaining distance so a nearly-complete swipe doesn't
+          // crawl through a full 450ms for the last 10% of travel.
+          const remaining = 1 - Math.min(Math.abs(lastDx) / window.innerWidth, 1);
+          const ms = Math.round(Math.max(120, 450 * remaining));
+          TABS.forEach(({ id }) => {
+            const el = tabRefs.current[id];
+            if (el) el.style.transition = `transform ${ms}ms ease`;
+          });
+          setTab(next);
         } else {
           // ease (not ease-out) starts slowly so the snap-back doesn't feel abrupt.
           // Duration scales with distance; floor at 280ms so short drags aren't instant.
@@ -246,7 +254,7 @@
                   position: 'absolute', inset: 0,
                   overflowY: 'auto', overflowX: 'hidden',
                   transform: `translateX(${offset}%)`,
-                  transition: 'transform 0.35s cubic-bezier(0.32,0.72,0,1)',
+                  transition: 'transform 0.45s ease',
                   pointerEvents: id === tab ? 'auto' : 'none',
                 }}>
                   {id === 'home'      && <Home onNavigate={setTab} />}
