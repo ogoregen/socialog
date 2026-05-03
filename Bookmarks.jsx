@@ -497,7 +497,7 @@ function Bookmarks() {
   const modalBm = modal ? (modal.bm != null ? modal.bm : modal) : null;
 
   return (
-    <div style={{ padding: '16px 16px 80px' }}>
+    <div style={{ padding: '20px 20px 80px' }}>
       <QuickAdd onPreview={(bm, fetchPromise, clearFn) => setModal({ bm, fetchPromise, clearFn })} />
 
       {/* Stats + view toggle */}
