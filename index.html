@@ -144,25 +144,51 @@
       }, []);
 
       function handleTouchStart(e) {
-        // Don't track if touch started inside a horizontally-scrollable element
-        // (e.g. filter pill rows) — let those scroll normally
         let el = e.target;
         while (el && el !== e.currentTarget) {
           if (el.scrollWidth > el.clientWidth + 2) { touchRef.current = null; return; }
           el = el.parentElement;
         }
-        touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY,
+          direction: null, dragging: false, lastDx: 0, time: Date.now() };
+      }
+      function handleTouchMove(e) {
+        if (!touchRef.current) return;
+        const dx = e.touches[0].clientX - touchRef.current.x;
+        const dy = e.touches[0].clientY - touchRef.current.y;
+        if (!touchRef.current.direction) {
+          if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+          if (Math.abs(dy) > Math.abs(dx)) { touchRef.current = null; return; }
+          touchRef.current.direction = 'h';
+        }
+        touchRef.current.dragging = true;
+        touchRef.current.lastDx   = dx;
+        const cur = TABS.findIndex(t => t.id === tab);
+        TABS.forEach(({ id }, idx) => {
+          const el = tabRefs.current[id];
+          if (!el) return;
+          el.style.transition = 'none';
+          el.style.transform  = `translateX(calc(${(idx - cur) * 100}% + ${dx}px))`;
+        });
       }
       function handleTouchEnd(e) {
-        if (!touchRef.current) return;
-        const dx = e.changedTouches[0].clientX - touchRef.current.x;
-        const dy = e.changedTouches[0].clientY - touchRef.current.y;
+        if (!touchRef.current || !touchRef.current.dragging) { touchRef.current = null; return; }
+        const { lastDx, time } = touchRef.current;
         touchRef.current = null;
-        if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 2) return;
-        const ids  = TABS.map(t => t.id);
-        const cur  = ids.indexOf(tab);
-        const next = dx < 0 ? ids[cur + 1] : ids[cur - 1];
-        if (next) setTab(next);
+        const velocity  = Math.abs(lastDx) / (Date.now() - time);
+        const ids = TABS.map(t => t.id);
+        const cur = ids.indexOf(tab);
+        const next = lastDx < 0 ? ids[cur + 1] : ids[cur - 1];
+        if (next && (Math.abs(lastDx) > window.innerWidth * 0.35 || velocity > 0.5)) {
+          setTab(next); // React re-render transitions from drag position to new tab
+        } else {
+          TABS.forEach(({ id }, idx) => {
+            const el = tabRefs.current[id];
+            if (!el) return;
+            el.style.transition = 'transform 0.35s cubic-bezier(0.32,0.72,0,1)';
+            el.style.transform  = `translateX(${(idx - cur) * 100}%)`;
+          });
+        }
       }
 
       function setTweak(key, val) {
@@ -203,7 +229,7 @@
           <div style={{ height: 'env(safe-area-inset-top, 0px)', flexShrink: 0 }} />
 
           {/* ── Content ── */}
-          <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}
+          <div onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}
             style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
             {TABS.map(({ id }, idx) => {
               const offset = (idx - TABS.findIndex(t => t.id === tab)) * 100;
