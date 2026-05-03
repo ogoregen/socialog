@@ -12,8 +12,10 @@ function StreakGrid({ routines }) {
   const month = now.getMonth();
   const todayDate = now.getDate();
 
-  const daysInMonth    = new Date(year, month + 1, 0).getDate();
-  const firstDayOfWeek = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  // Monday-first: shift Sun(0)→6, Mon(1)→0, …, Sat(6)→5
+  const rawFirst       = new Date(year, month, 1).getDay();
+  const firstDayOfWeek = (rawFirst + 6) % 7;
   const monthLabel     = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
   // Compute current streak: consecutive past days (excl. days with no routines) with ≥1 done
@@ -45,29 +47,22 @@ function StreakGrid({ routines }) {
     return '#22c55e';
   }
 
-  const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   const cells = Array(firstDayOfWeek).fill(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
   return (
-    <div style={{ marginBottom: 32 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--fg-muted)' }}>
-            Habits
-          </span>
-          {streak > 0 && (
-            <span style={{ fontSize: 12, fontWeight: 600, color: '#22c55e' }}>
-              {streak} day streak
-            </span>
-          )}
-        </div>
+    <div style={{ marginBottom: 28 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+        {streak > 0
+          ? <span style={{ fontSize: 12, fontWeight: 600, color: '#22c55e' }}>{streak} day streak</span>
+          : <span />}
         <span style={{ fontSize: 11, color: 'var(--fg-muted)' }}>{monthLabel}</span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3 }}>
         {DAY_LABELS.map((l, i) => (
-          <div key={i} style={{ textAlign: 'center', fontSize: 9, fontWeight: 600, color: 'var(--fg-muted)', paddingBottom: 2, letterSpacing: '0.06em' }}>
+          <div key={i} style={{ textAlign: 'center', fontSize: 8, fontWeight: 600, color: 'var(--fg-muted)', paddingBottom: 2, letterSpacing: '0.06em' }}>
             {l}
           </div>
         ))}
@@ -76,9 +71,9 @@ function StreakGrid({ routines }) {
           return (
             <div key={i} style={{
               aspectRatio: '1',
-              borderRadius: 5,
+              borderRadius: 3,
               background: cellColor(day),
-              boxShadow: isToday ? '0 0 0 2px var(--fg)' : 'none',
+              boxShadow: isToday ? '0 0 0 1.5px var(--fg)' : 'none',
             }} />
           );
         })}
