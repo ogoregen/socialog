@@ -154,7 +154,7 @@ function Home({ onNavigate }) {
           {[...pendingRoutines, ...doneRoutines].map(r => {
             const isDone = !!(r.completions && r.completions[todayKey]);
             return (
-              <div key={r.id} onClick={() => onNavigate('routines')} style={{ ...rowStyle, opacity: isDone ? 0.5 : 1 }}>
+              <div key={r.id} data-tap="" onClick={() => onNavigate('routines')} style={{ ...rowStyle, opacity: isDone ? 0.5 : 1 }}>
                 <div style={{
                   width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
                   border: `2px solid ${isDone ? '#22c55e' : 'var(--border)'}`,
@@ -186,7 +186,7 @@ function Home({ onNavigate }) {
               : isUpcoming ? new Date(t.dueDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
               : null;
             return (
-              <div key={t.id} onClick={() => onNavigate('todos')} style={{ ...rowStyle, opacity: t.done ? 0.5 : 1 }}>
+              <div key={t.id} data-tap="" onClick={() => onNavigate('todos')} style={{ ...rowStyle, opacity: t.done ? 0.5 : 1 }}>
                 <div style={{
                   width: 20, height: 20, borderRadius: 6, flexShrink: 0,
                   border: `2px solid ${t.done ? '#22c55e' : isOverdue ? '#ef4444' : 'var(--border)'}`,
@@ -217,7 +217,7 @@ function Home({ onNavigate }) {
             {navBtn('View all', 'bookmarks')}
           </div>
           {savedToday.map(b => (
-            <div key={b.id} onClick={() => onNavigate('bookmarks')} style={rowStyle}>
+            <div key={b.id} data-tap="" onClick={() => onNavigate('bookmarks')} style={rowStyle}>
               <span style={{ fontSize: 15, flexShrink: 0, opacity: 0.5 }}>
                 {HOME_TYPE_ICONS[b.type] || '★'}
               </span>

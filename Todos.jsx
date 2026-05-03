@@ -387,24 +387,20 @@ function Todos() {
 }
 
 function TodoRow({ item, allCats, onToggle, onDelete, onCycleCategory, onSetDueDate }) {
-  const [pressed, setPressed] = React.useState(false);
   const color    = catColor(item.category, allCats);
   const dueFmt   = formatDueDate(item.dueDate);
   const pillStyle = duePillStyle(dueFmt);
 
   return (
     <div
+      data-tap=""
       style={{
         display: 'flex', alignItems: 'center', gap: 12,
         padding: '12px 14px', marginBottom: 8,
         background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14,
         opacity: item.done ? 0.5 : 1,
-        transform: pressed ? 'scale(0.99)' : 'scale(1)',
-        transition: 'transform 0.1s, opacity 0.2s',
+        transition: 'opacity 0.2s',
       }}
-      onPointerDown={() => setPressed(true)}
-      onPointerUp={() => setPressed(false)}
-      onPointerLeave={() => setPressed(false)}
     >
       {/* Checkbox */}
       <button onClick={() => onToggle(item.id)} style={{

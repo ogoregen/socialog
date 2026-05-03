@@ -64,6 +64,9 @@
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
     button:active { opacity: 0.7; }
+
+    [data-tap] { cursor: pointer; transition: transform 0.1s; }
+    [data-tap]:active { transform: scale(0.985); }
   </style>
 </head>
 <body>
@@ -99,12 +102,14 @@
       const [tab, setTab] = React.useState(
         () => localStorage.getItem('socialog_tab') || 'home'
       );
+      const scrollRef = React.useRef(null);
       const [tweaks, setTweaksState] = React.useState(TWEAK_DEFAULTS);
       const [tweaksOpen, setTweaksOpen] = React.useState(false);
 
-      // Persist active tab
+      // Persist active tab + reset scroll
       React.useEffect(() => {
         localStorage.setItem('socialog_tab', tab);
+        scrollRef.current?.scrollTo(0, 0);
       }, [tab]);
 
       // Apply theme
@@ -161,7 +166,7 @@
           <div style={{ height: 'env(safe-area-inset-top, 0px)', flexShrink: 0 }} />
 
           {/* ── Content ── */}
-          <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+          <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
             {tab === 'home'      && <Home onNavigate={setTab} />}
             {tab === 'bookmarks' && <Bookmarks />}
             {tab === 'todos'     && <Todos />}
