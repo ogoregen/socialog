@@ -197,7 +197,6 @@ function QuickAdd({ onPreview }) {
 
     savingRef.current = true;
     setLoading(true);
-    setUrl('');
 
     const type   = inferType(normalized);
     const domain = extractDomain(normalized);
@@ -210,7 +209,7 @@ function QuickAdd({ onPreview }) {
 
     setLoading(false);
     savingRef.current = false;
-    onPreview(bm, fetchPromise);
+    onPreview(bm, fetchPromise, () => setUrl(''));
   }
 
   function handlePaste(e) {
@@ -456,6 +455,11 @@ function Bookmarks() {
 
   React.useEffect(() => { save('bookmarks', items); }, [items]);
 
+  function closeModal() {
+    if (modal && modal.clearFn) modal.clearFn();
+    setModal(null);
+  }
+
   function handleSave(bm) {
     let isNew;
     setItems(prev => {
@@ -464,7 +468,7 @@ function Bookmarks() {
       if (!isNew) { const next = [...prev]; next[idx] = bm; return next; }
       return [bm, ...prev];
     });
-    setModal(null);
+    closeModal();
     showToast(isNew ? 'Bookmark saved' : 'Bookmark updated');
   }
 
@@ -483,7 +487,7 @@ function Bookmarks() {
 
   return (
     <div style={{ padding: '20px 20px 60px' }}>
-      <QuickAdd onPreview={(bm, fetchPromise) => setModal({ bm, fetchPromise })} />
+      <QuickAdd onPreview={(bm, fetchPromise, clearFn) => setModal({ bm, fetchPromise, clearFn })} />
 
       {/* Type filter pills */}
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 8 }}>
@@ -533,7 +537,7 @@ function Bookmarks() {
       )}
 
       {modalBm && (
-        <BookmarkModal bm={modalBm} fetchPromise={modal.fetchPromise} isNew={!items.find(b => b.id === modalBm.id)} onSave={handleSave} onClose={() => setModal(null)} />
+        <BookmarkModal bm={modalBm} fetchPromise={modal.fetchPromise} isNew={!items.find(b => b.id === modalBm.id)} onSave={handleSave} onClose={closeModal} />
       )}
     </div>
   );
