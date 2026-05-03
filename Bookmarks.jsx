@@ -389,16 +389,16 @@ function ListCard({ bm, onEdit, onDelete }) {
 }
 
 // ── Grid card ─────────────────────────────────────────────────────────────────
-// movie = portrait cover (150%), music = square cover (100%),
+// movie/book = portrait cover (150%), music = square cover (100%),
 // everything else = compact list row that flows into the masonry column.
 function GridCard({ bm, onEdit, onDelete }) {
   const typeInfo = BOOKMARK_TYPES[bm.type] || BOOKMARK_TYPES.article;
   const isDone   = bm.status === 'done';
   const subtitle = bm.meta?.artist || bm.meta?.author || bm.meta?.director || bm.meta?.source || typeInfo.label;
 
-  if (bm.type !== 'movie' && bm.type !== 'music') {
+  if (bm.type !== 'movie' && bm.type !== 'music' && bm.type !== 'book') {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0' }}>
         <div style={{ width: 36, height: 36, borderRadius: 6, flexShrink: 0, overflow: 'hidden', background: 'var(--surface)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: 'var(--fg-muted)' }}>
           {bm.coverUrl
             ? <img src={bm.coverUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -575,7 +575,7 @@ function Bookmarks() {
       {view === 'grid'
         ? <div style={{ columnCount: 2, columnGap: 12 }}>
             {filtered.map(bm => (
-              <div key={bm.id} style={{ breakInside: 'avoid', display: 'block', marginBottom: (bm.type === 'movie' || bm.type === 'music') ? 20 : 0 }}>
+              <div key={bm.id} style={{ breakInside: 'avoid', display: 'block', marginBottom: (bm.type === 'movie' || bm.type === 'music' || bm.type === 'book') ? 20 : 0 }}>
                 <GridCard bm={bm} onEdit={b => setModal(b)} onDelete={handleDelete} />
               </div>
             ))}
