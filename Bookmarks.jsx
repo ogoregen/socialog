@@ -388,38 +388,14 @@ function ListCard({ bm, onEdit, onDelete }) {
   );
 }
 
-// ── Grid card ─────────────────────────────────────────────────────────────────
-// movie/book = portrait cover (150%), music = square cover (100%),
-// everything else = compact list row that flows into the masonry column.
+// Cover types: masonry grid. Everything else: flat list below the grid.
+const COVER_TYPES = new Set(['movie', 'music', 'book']);
+
+// ── Grid card (cover types only) ──────────────────────────────────────────────
 function GridCard({ bm, onEdit, onDelete }) {
   const typeInfo = BOOKMARK_TYPES[bm.type] || BOOKMARK_TYPES.article;
   const isDone   = bm.status === 'done';
   const subtitle = bm.meta?.artist || bm.meta?.author || bm.meta?.director || bm.meta?.source || typeInfo.label;
-
-  if (bm.type !== 'movie' && bm.type !== 'music' && bm.type !== 'book') {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0' }}>
-        <div style={{ width: 36, height: 36, borderRadius: 6, flexShrink: 0, overflow: 'hidden', background: 'var(--surface)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: 'var(--fg-muted)' }}>
-          {bm.coverUrl
-            ? <img src={bm.coverUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            : <span style={{ opacity: 0.4 }}>{typeInfo.icon}</span>}
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          {bm.url
-            ? <a href={bm.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--fg)', textDecoration: 'none' }}>
-                <div style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bm.title || '(untitled)'}</div>
-              </a>
-            : <div style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bm.title || '(untitled)'}</div>
-          }
-          <div style={{ fontSize: 10, color: 'var(--fg-muted)', marginTop: 1 }}>{isDone && bm.doneAt ? formatLogDate(bm.doneAt) : subtitle}</div>
-        </div>
-        <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
-          <button onClick={() => onEdit(bm)} style={{ background: 'var(--border)', border: 'none', borderRadius: 6, fontSize: 11, color: 'var(--fg-muted)', cursor: 'pointer', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
-          <button onClick={() => onDelete(bm.id)} style={{ background: 'var(--border)', border: 'none', borderRadius: 6, fontSize: 13, color: 'var(--fg-muted)', cursor: 'pointer', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
-        </div>
-      </div>
-    );
-  }
 
   const aspectPct = bm.type === 'music' ? '100%' : '150%';
 
@@ -468,12 +444,17 @@ function Bookmarks() {
   const [filter, setFilter]         = React.useState('all');
   const [typeFilter, setTypeFilter] = React.useState('all');
   const [view, setView]             = React.useState(() => localStorage.getItem('socialog_bm_view') || 'grid');
+  const [sort, setSort]             = React.useState('recent');
 
   function toggleView() {
     const next = view === 'grid' ? 'list' : 'grid';
     setView(next);
     localStorage.setItem('socialog_bm_view', next);
   }
+
+  const SORT_CYCLE = ['recent', 'rating', 'status', 'title'];
+  const SORT_LABELS = { recent: '↓ New', rating: '★ Top', status: '◉ Status', title: 'A–Z' };
+  function cycleSort() { setSort(s => SORT_CYCLE[(SORT_CYCLE.indexOf(s) + 1) % SORT_CYCLE.length]); }
 
   React.useEffect(() => { save('bookmarks', items); }, [items]);
 
@@ -517,6 +498,16 @@ function Bookmarks() {
     return true;
   });
 
+  const sorted = [...filtered].sort((a, b) => {
+    if (sort === 'rating') return (b.rating || 0) - (a.rating || 0) || new Date(b.createdAt) - new Date(a.createdAt);
+    if (sort === 'status') return STATUS_OPTIONS.indexOf(a.status) - STATUS_OPTIONS.indexOf(b.status);
+    if (sort === 'title')  return (a.title || '').localeCompare(b.title || '');
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+
+  const coverItems = sorted.filter(b => COVER_TYPES.has(b.type));
+  const listItems  = sorted.filter(b => !COVER_TYPES.has(b.type));
+
   const want  = items.filter(b => b.status === 'want to try').length;
   const doing = items.filter(b => b.status === 'in progress').length;
   const done  = items.filter(b => b.status === 'done').length;
@@ -535,6 +526,9 @@ function Bookmarks() {
             <span><strong style={{ color: STATUS_COLORS['in progress'] }}>{doing}</strong> <span style={{ color: 'var(--fg-muted)' }}>doing</span></span>
             <span><strong style={{ color: STATUS_COLORS['done'] }}>{done}</strong> <span style={{ color: 'var(--fg-muted)' }}>done</span></span>
           </div>
+          <button onClick={cycleSort} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: 'var(--fg-muted)', padding: '4px 6px', lineHeight: 1, marginRight: 2 }}>
+            {SORT_LABELS[sort]}
+          </button>
           <button onClick={toggleView} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--fg-muted)', padding: 4, lineHeight: 1, width: 28, textAlign: 'center' }}>
             {view === 'grid' ? '▤' : '⊞'}
           </button>
@@ -572,18 +566,26 @@ function Bookmarks() {
       </div>
 
       {/* Cards */}
-      {view === 'grid'
-        ? <div style={{ columnCount: 2, columnGap: 12 }}>
-            {filtered.map(bm => (
-              <div key={bm.id} style={{ breakInside: 'avoid', display: 'block', marginBottom: (bm.type === 'movie' || bm.type === 'music' || bm.type === 'book') ? 20 : 0 }}>
+      {view === 'grid' ? (<>
+        {coverItems.length > 0 && (
+          <div style={{ columnCount: 2, columnGap: 12, marginBottom: listItems.length > 0 ? 24 : 0 }}>
+            {coverItems.map(bm => (
+              <div key={bm.id} style={{ breakInside: 'avoid', display: 'block', marginBottom: 20 }}>
                 <GridCard bm={bm} onEdit={b => setModal(b)} onDelete={handleDelete} />
               </div>
             ))}
           </div>
-        : <div>
-            {filtered.map(bm => <ListCard key={bm.id} bm={bm} onEdit={b => setModal(b)} onDelete={handleDelete} />)}
+        )}
+        {listItems.length > 0 && (
+          <div>
+            {listItems.map(bm => <ListCard key={bm.id} bm={bm} onEdit={b => setModal(b)} onDelete={handleDelete} />)}
           </div>
-      }
+        )}
+      </>) : (
+        <div>
+          {sorted.map(bm => <ListCard key={bm.id} bm={bm} onEdit={b => setModal(b)} onDelete={handleDelete} />)}
+        </div>
+      )}
 
       {filtered.length === 0 && (
         <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--fg-muted)' }}>
