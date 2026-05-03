@@ -321,6 +321,46 @@ function BookmarkModal({ bm, isNew, fetchPromise, onSave, onClose }) {
   );
 }
 
+// ── List card ─────────────────────────────────────────────────────────────────
+function ListCard({ bm, onEdit, onDelete }) {
+  const typeInfo = BOOKMARK_TYPES[bm.type] || BOOKMARK_TYPES.article;
+  const isDone   = bm.status === 'done';
+  const subtitle = bm.meta?.artist || bm.meta?.author || bm.meta?.director || bm.meta?.source || typeInfo.label;
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
+      {/* Thumbnail */}
+      <div style={{ width: 44, height: 44, borderRadius: 8, flexShrink: 0, overflow: 'hidden', background: 'var(--surface)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: 'var(--fg-muted)' }}>
+        {bm.coverUrl
+          ? <img src={bm.coverUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          : <span style={{ opacity: 0.4 }}>{typeInfo.icon}</span>}
+      </div>
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {bm.url
+          ? <a href={bm.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--fg)', textDecoration: 'none' }}>
+              <div style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{bm.title || '(untitled)'}</div>
+            </a>
+          : <div style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{bm.title || '(untitled)'}</div>
+        }
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+          {bm.rating > 0 && <span style={{ fontSize: 11, color: '#f59e0b', letterSpacing: '-0.5px' }}>{'★'.repeat(bm.rating)}</span>}
+          <span style={{ fontSize: 11, color: 'var(--fg-muted)' }}>{isDone && bm.doneAt ? formatLogDate(bm.doneAt) : subtitle}</span>
+        </div>
+      </div>
+
+      <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 20, background: STATUS_COLORS[bm.status], color: '#fff', fontWeight: 700, flexShrink: 0 }}>
+        {STATUS_LABELS[bm.status]}
+      </span>
+
+      <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+        <button onClick={() => onEdit(bm)} style={{ background: 'var(--border)', border: 'none', borderRadius: 7, fontSize: 11, color: 'var(--fg-muted)', cursor: 'pointer', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
+        <button onClick={() => onDelete(bm.id)} style={{ background: 'var(--border)', border: 'none', borderRadius: 7, fontSize: 14, color: 'var(--fg-muted)', cursor: 'pointer', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+      </div>
+    </div>
+  );
+}
+
 // ── Grid card ─────────────────────────────────────────────────────────────────
 function GridCard({ bm, onEdit, onDelete }) {
   const typeInfo = BOOKMARK_TYPES[bm.type] || BOOKMARK_TYPES.article;
@@ -373,6 +413,13 @@ function Bookmarks() {
   const [modal, setModal]           = React.useState(null);
   const [filter, setFilter]         = React.useState('all');
   const [typeFilter, setTypeFilter] = React.useState('all');
+  const [view, setView]             = React.useState(() => localStorage.getItem('socialog_bm_view') || 'grid');
+
+  function toggleView() {
+    const next = view === 'grid' ? 'list' : 'grid';
+    setView(next);
+    localStorage.setItem('socialog_bm_view', next);
+  }
 
   React.useEffect(() => { save('bookmarks', items); }, [items]);
 
@@ -426,12 +473,17 @@ function Bookmarks() {
     <div style={{ padding: '16px 16px 80px' }}>
       <QuickAdd onPreview={(bm, fetchPromise, clearFn) => setModal({ bm, fetchPromise, clearFn })} />
 
-      {/* Stats */}
+      {/* Stats + view toggle */}
       {items.length > 0 && (
-        <div style={{ display: 'flex', gap: 16, marginBottom: 16, fontSize: 12 }}>
-          <span><strong style={{ color: STATUS_COLORS['want to try'] }}>{want}</strong> <span style={{ color: 'var(--fg-muted)' }}>want</span></span>
-          <span><strong style={{ color: STATUS_COLORS['in progress'] }}>{doing}</strong> <span style={{ color: 'var(--fg-muted)' }}>doing</span></span>
-          <span><strong style={{ color: STATUS_COLORS['done'] }}>{done}</strong> <span style={{ color: 'var(--fg-muted)' }}>done</span></span>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+          <div style={{ display: 'flex', gap: 16, fontSize: 12, flex: 1 }}>
+            <span><strong style={{ color: STATUS_COLORS['want to try'] }}>{want}</strong> <span style={{ color: 'var(--fg-muted)' }}>want</span></span>
+            <span><strong style={{ color: STATUS_COLORS['in progress'] }}>{doing}</strong> <span style={{ color: 'var(--fg-muted)' }}>doing</span></span>
+            <span><strong style={{ color: STATUS_COLORS['done'] }}>{done}</strong> <span style={{ color: 'var(--fg-muted)' }}>done</span></span>
+          </div>
+          <button onClick={toggleView} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--fg-muted)', padding: 4, lineHeight: 1 }}>
+            {view === 'grid' ? '▤' : '⊞'}
+          </button>
         </div>
       )}
 
@@ -465,12 +517,15 @@ function Bookmarks() {
         })}
       </div>
 
-      {/* Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px 12px' }}>
-        {filtered.map(bm => (
-          <GridCard key={bm.id} bm={bm} onEdit={b => setModal(b)} onDelete={handleDelete} />
-        ))}
-      </div>
+      {/* Cards */}
+      {view === 'grid'
+        ? <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px 12px' }}>
+            {filtered.map(bm => <GridCard key={bm.id} bm={bm} onEdit={b => setModal(b)} onDelete={handleDelete} />)}
+          </div>
+        : <div>
+            {filtered.map(bm => <ListCard key={bm.id} bm={bm} onEdit={b => setModal(b)} onDelete={handleDelete} />)}
+          </div>
+      }
 
       {filtered.length === 0 && (
         <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--fg-muted)' }}>
