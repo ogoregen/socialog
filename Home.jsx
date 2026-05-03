@@ -19,12 +19,13 @@ function Home({ onNavigate }) {
 
   const overdue        = todos.filter(t => !t.done && t.dueDate && daysDiff(t.dueDate) < 0);
   const dueToday       = todos.filter(t => !t.done && t.dueDate && daysDiff(t.dueDate) === 0);
+  const upcoming       = todos.filter(t => { const d = daysDiff(t.dueDate); return !t.done && d > 0 && d <= 7; });
   const completedToday = todos.filter(t => t.done && t.doneAt && t.doneAt.slice(0, 10) === todayKey);
 
   const savedToday = bookmarks.filter(b => b.createdAt && b.createdAt.slice(0, 10) === todayKey);
 
   const hasRoutines = todayRoutines.length > 0;
-  const hasTasks    = overdue.length + dueToday.length + completedToday.length > 0;
+  const hasTasks    = overdue.length + dueToday.length + upcoming.length + completedToday.length > 0;
   const hasSaved    = savedToday.length > 0;
   const isEmpty     = !hasRoutines && !hasTasks && !hasSaved;
 
@@ -95,8 +96,15 @@ function Home({ onNavigate }) {
             <span>Tasks</span>
             {navBtn('View all', 'todos')}
           </div>
-          {[...overdue, ...dueToday, ...completedToday].map(t => {
-            const isOverdue = !t.done && t.dueDate && daysDiff(t.dueDate) < 0;
+          {[...overdue, ...dueToday, ...upcoming, ...completedToday].map(t => {
+            const diff = daysDiff(t.dueDate);
+            const isOverdue  = !t.done && diff < 0;
+            const isUpcoming = !t.done && diff > 0;
+            const dueLabel = isOverdue ? 'Overdue'
+              : isUpcoming && diff === 1 ? 'Tomorrow'
+              : isUpcoming ? new Date(t.dueDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+              : null;
+            const labelColor = isOverdue ? '#ef4444' : 'var(--fg-muted)';
             return (
               <div key={t.id} onClick={() => onNavigate('todos')} style={{ ...rowStyle, opacity: t.done ? 0.5 : 1 }}>
                 <div style={{
@@ -110,9 +118,9 @@ function Home({ onNavigate }) {
                 <span style={{ fontSize: 14, fontWeight: 500, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: t.done ? 'line-through' : 'none' }}>
                   {t.text}
                 </span>
-                {isOverdue && (
-                  <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 20, background: '#ef4444', color: '#fff', fontWeight: 600, flexShrink: 0 }}>
-                    Overdue
+                {dueLabel && (
+                  <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 20, background: isOverdue ? '#ef4444' : 'transparent', border: isOverdue ? 'none' : '1px solid var(--border)', color: isOverdue ? '#fff' : 'var(--fg-muted)', fontWeight: 600, flexShrink: 0 }}>
+                    {dueLabel}
                   </span>
                 )}
               </div>
