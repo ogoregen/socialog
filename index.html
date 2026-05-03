@@ -180,11 +180,13 @@
         if (next && (Math.abs(lastDx) > window.innerWidth * 0.35 || velocity > 0.5)) {
           setTab(next); // React re-render transitions from drag position to new tab
         } else {
-          TABS.forEach(({ id }, idx) => {
-            const el = tabRefs.current[id];
-            if (!el) return;
-            el.style.transition = 'transform 0.35s cubic-bezier(0.32,0.72,0,1)';
-            el.style.transform  = `translateX(${(idx - cur) * 100}%)`;
+          requestAnimationFrame(() => {
+            TABS.forEach(({ id }, idx) => {
+              const el = tabRefs.current[id];
+              if (!el) return;
+              el.style.transition = 'transform 0.4s cubic-bezier(0.32,0.72,0,1)';
+              el.style.transform  = `translateX(${(idx - cur) * 100}%)`;
+            });
           });
         }
       }
