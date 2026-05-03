@@ -43,6 +43,16 @@ function duePillStyle(fmt) {
   return           { background: 'var(--surface)', color: 'var(--fg-muted)', border: '1.5px solid var(--border)' };
 }
 
+function formatDoneDate(iso) {
+  if (!iso) return 'done';
+  const d = new Date(iso);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) return 'done today';
+  const mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+  if (d.getFullYear() === now.getFullYear()) return `done ${mo} ${d.getDate()}`;
+  return `done ${mo} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
 const BUCKETS = [
   { id: 'overdue',  label: 'Overdue',    color: '#ef4444' },
   { id: 'today',    label: 'Today',      color: '#f59e0b' },
@@ -228,7 +238,12 @@ function Todos() {
   }
 
   function toggleDone(id) {
-    setItems(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
+    setItems(prev => prev.map(t => {
+      if (t.id !== id) return t;
+      return t.done
+        ? { ...t, done: false, doneAt: null }
+        : { ...t, done: true,  doneAt: new Date().toISOString() };
+    }));
   }
 
   function cycleCategory(id) {
@@ -410,24 +425,29 @@ function TodoRow({ item, allCats, onToggle, onDelete, onCycleCategory, onSetDueD
 
       {/* Actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-        {/* Due date pill */}
-        <div style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center',
-          padding: item.dueDate ? '5px 6px 5px 10px' : '5px 10px',
-          borderRadius: 20, gap: 5, cursor: 'pointer', ...pillStyle }}>
-          <span style={{
-            fontSize: 11, fontWeight: 600, pointerEvents: 'none', whiteSpace: 'nowrap',
-          }}>{dueFmt ? dueFmt.label : '◷'}</span>
-          {item.dueDate && (
-            <button onClick={e => { e.stopPropagation(); onSetDueDate(item.id, null); }} style={{
-              position: 'relative', zIndex: 1, background: 'rgba(0,0,0,0.12)', border: 'none',
-              borderRadius: 4, width: 18, height: 18, fontSize: 13, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'inherit', padding: 0, flexShrink: 0,
-            }}>×</button>
-          )}
-          <input type="date" value={item.dueDate || ''} onChange={e => onSetDueDate(item.id, e.target.value || null)}
-            style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
-        </div>
+        {item.done ? (
+          <span style={{ fontSize: 11, color: 'var(--fg-muted)', whiteSpace: 'nowrap', opacity: 0.6 }}>
+            {formatDoneDate(item.doneAt)}
+          </span>
+        ) : (
+          <div style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center',
+            padding: item.dueDate ? '5px 6px 5px 10px' : '5px 10px',
+            borderRadius: 20, gap: 5, cursor: 'pointer', ...pillStyle }}>
+            <span style={{
+              fontSize: 11, fontWeight: 600, pointerEvents: 'none', whiteSpace: 'nowrap',
+            }}>{dueFmt ? dueFmt.label : '◷'}</span>
+            {item.dueDate && (
+              <button onClick={e => { e.stopPropagation(); onSetDueDate(item.id, null); }} style={{
+                position: 'relative', zIndex: 1, background: 'rgba(0,0,0,0.12)', border: 'none',
+                borderRadius: 4, width: 18, height: 18, fontSize: 13, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'inherit', padding: 0, flexShrink: 0,
+              }}>×</button>
+            )}
+            <input type="date" value={item.dueDate || ''} onChange={e => onSetDueDate(item.id, e.target.value || null)}
+              style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+          </div>
+        )}
 
         {/* Category */}
         <button onClick={() => onCycleCategory(item.id)} style={{
