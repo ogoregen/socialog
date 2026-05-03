@@ -509,7 +509,7 @@ function Bookmarks() {
             <span><strong style={{ color: STATUS_COLORS['in progress'] }}>{doing}</strong> <span style={{ color: 'var(--fg-muted)' }}>doing</span></span>
             <span><strong style={{ color: STATUS_COLORS['done'] }}>{done}</strong> <span style={{ color: 'var(--fg-muted)' }}>done</span></span>
           </div>
-          <button onClick={toggleView} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--fg-muted)', padding: 4, lineHeight: 1 }}>
+          <button onClick={toggleView} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--fg-muted)', padding: 4, lineHeight: 1, width: 28, textAlign: 'center' }}>
             {view === 'grid' ? '▤' : '⊞'}
           </button>
         </div>
