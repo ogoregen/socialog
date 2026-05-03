@@ -123,28 +123,31 @@ async function fetchSmartTitle(url) {
     } catch (e) {}
   }
 
-  // General proxy-based fetch for all other domains — try two proxies in sequence
-  const proxyFetchers = [
-    async () => {
-      const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(7000) });
-      if (!r.ok) return null;
-      return (await r.json()).contents || null;
-    },
-    async () => {
-      const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(7000) });
-      if (!r.ok) return null;
-      return r.text();
-    },
-  ];
-
-  for (const fetcher of proxyFetchers) {
+  // Try both proxies in parallel — resolve with whichever returns a usable title first
+  const tryProxy = async (fetcher) => {
     try {
       const html = await fetcher();
-      if (!html) continue;
+      if (!html) throw new Error('empty');
       const parsed = parseTitleFromHtml(html);
-      if (parsed?.title) return parsed;
-    } catch (e) {}
-  }
+      if (!parsed?.title) throw new Error('no title');
+      return parsed;
+    } catch (e) { throw e; }
+  };
+
+  try {
+    return await Promise.any([
+      tryProxy(async () => {
+        const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(5000) });
+        if (!r.ok) return null;
+        return (await r.json()).contents || null;
+      }),
+      tryProxy(async () => {
+        const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(5000) });
+        if (!r.ok) return null;
+        return r.text();
+      }),
+    ]);
+  } catch (e) {}
 
   return null;
 }
@@ -176,16 +179,16 @@ function QuickAdd({ onPreview }) {
 
     const type   = inferType(normalized);
     const domain = extractDomain(normalized);
-    const result = await fetchSmartTitle(normalized);
 
     const bm = emptyBookmark(type, normalized);
-    bm.title    = result?.title    || domain;
-    bm.coverUrl = result?.coverUrl || '';
+    bm.title       = domain;
     bm.meta.source = domain;
+
+    const fetchPromise = fetchSmartTitle(normalized);
 
     setLoading(false);
     savingRef.current = false;
-    onPreview(bm);
+    onPreview(bm, fetchPromise);
   }
 
   function handlePaste(e) {
@@ -230,9 +233,21 @@ function QuickAdd({ onPreview }) {
 }
 
 // ── Edit modal ────────────────────────────────────────────────────────────────
-function BookmarkModal({ bm, isNew, onSave, onClose }) {
-  const [form, setForm] = React.useState(bm);
+function BookmarkModal({ bm, isNew, fetchPromise, onSave, onClose }) {
+  const [form, setForm]       = React.useState(bm);
+  const [fetching, setFetching] = React.useState(!!fetchPromise);
   const typeInfo = BOOKMARK_TYPES[form.type];
+
+  React.useEffect(() => {
+    if (!fetchPromise) return;
+    let alive = true;
+    fetchPromise.then(result => {
+      if (!alive) return;
+      if (result?.title) setForm(f => ({ ...f, title: result.title, coverUrl: result.coverUrl || f.coverUrl }));
+      setFetching(false);
+    }).catch(() => { if (alive) setFetching(false); });
+    return () => { alive = false; };
+  }, []);
 
   function set(field, val) { setForm(f => ({ ...f, [field]: val })); }
   function setMeta(field, val) { setForm(f => ({ ...f, meta: { ...f.meta, [field]: val } })); }
@@ -285,8 +300,8 @@ function BookmarkModal({ bm, isNew, onSave, onClose }) {
           </div>
 
           <div>
-            <label style={labelStyle}>Title</label>
-            <input style={inputStyle} value={form.title} onChange={e => set('title', e.target.value)} placeholder="Title…" />
+            <label style={labelStyle}>Title {fetching && <span style={{ opacity: 0.4, fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>— fetching…</span>}</label>
+            <input style={{ ...inputStyle, opacity: fetching ? 0.5 : 1 }} value={form.title} onChange={e => set('title', e.target.value)} placeholder="Title…" />
           </div>
 
           <div>
@@ -444,7 +459,7 @@ function Bookmarks() {
 
   return (
     <div style={{ padding: '20px 20px 60px' }}>
-      <QuickAdd onPreview={bm => setModal(bm)} />
+      <QuickAdd onPreview={(bm, fetchPromise) => setModal({ bm, fetchPromise })} />
 
       {/* Type filter pills */}
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 8 }}>
@@ -493,7 +508,9 @@ function Bookmarks() {
         </div>
       )}
 
-      {modal && <BookmarkModal bm={modal} isNew={!items.find(b => b.id === modal.id)} onSave={handleSave} onClose={() => setModal(null)} />}
+      {modal && (() => { const bm = modal.bm ?? modal; return (
+        <BookmarkModal bm={bm} fetchPromise={modal.fetchPromise} isNew={!items.find(b => b.id === bm.id)} onSave={handleSave} onClose={() => setModal(null)} />
+      ); })()}
     </div>
   );
 }
