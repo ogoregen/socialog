@@ -89,9 +89,9 @@
     // ── Tab config ────────────────────────────────────────────────────────────
     const TABS = [
       { id: 'home',      label: 'Home',      icon: '◈' },
-      { id: 'bookmarks', label: 'Bookmarks', icon: '★' },
-      { id: 'todos',     label: 'Tasks',     icon: '✓' },
       { id: 'routines',  label: 'Routines',  icon: '○' },
+      { id: 'todos',     label: 'Tasks',     icon: '✓' },
+      { id: 'bookmarks', label: 'Bookmarks', icon: '★' },
     ];
 
     // ── App shell ─────────────────────────────────────────────────────────────
@@ -163,7 +163,7 @@
             flexShrink: 0,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px 0 16px' }}>
-              <span onClick={() => setTab('todos')} style={{
+              <span onClick={() => setTab('home')} style={{
                 fontSize: 12, fontWeight: 400, letterSpacing: '0.12em',
                 fontFamily: 'var(--mono)', cursor: 'pointer',
                 color: 'var(--fg-muted)', opacity: 0.5, userSelect: 'none',
