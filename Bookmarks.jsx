@@ -83,9 +83,10 @@ function extractSmartMeta(url) {
 }
 
 async function fetchGoodreadsBook(url) {
-  const match = url.match(/goodreads\.com\/book\/show\/\d+-([a-z0-9-]+)/i);
+  // Handles /book/show/123-slug and /book/show/123.Title_Words
+  const match = url.match(/goodreads\.com\/book\/show\/\d+[-.]([^/?#]+)/i);
   if (!match) return null;
-  const query = match[1].replace(/-/g, ' ').trim();
+  const query = match[1].replace(/[-_]/g, ' ').trim();
   try {
     const res = await fetch(
       `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(query)}&maxResults=1`,
@@ -109,6 +110,23 @@ async function fetchSmartTitle(url) {
   if (/goodreads\.com/.test(url)) {
     const result = await fetchGoodreadsBook(url);
     if (result) return result;
+    // Fallback for ID-only URLs: Jina returns og:title as "Title by Author | Goodreads"
+    try {
+      const res = await fetch(`https://r.jina.ai/${url}`, {
+        headers: { 'X-Return-Format': 'html' },
+        signal: abortAfter(10000),
+      });
+      if (res.ok) {
+        const parsed = parseTitleFromHtml(await res.text());
+        if (parsed?.title) {
+          const m = parsed.title.match(/^(.+?)\s+by\s+([^|]+?)(?:\s*\|.*)?$/i);
+          return m
+            ? { title: m[1].trim(), coverUrl: parsed.coverUrl, meta: { author: m[2].trim() } }
+            : parsed;
+        }
+      }
+    } catch (e) {}
+    return null;
   }
 
   // GitHub repos: public API — no CORS proxy needed, returns clean title + owner avatar
