@@ -47,7 +47,10 @@ function BottomSheet({ onClose, maxHeight, children }) {
 
   const isOpen = entered && !closing;
 
-  return (
+  // Portal to document.body: tab panels use CSS transform for sliding, which makes
+  // position:fixed descendants position relative to the panel instead of the viewport.
+  // Portaling out of the transform tree fixes both the height inflation and fixed positioning.
+  return ReactDOM.createPortal(
     <div
       // Stop all touch events from reaching the tab-swipe handler above
       onTouchStart={e => e.stopPropagation()}
@@ -76,6 +79,7 @@ function BottomSheet({ onClose, maxHeight, children }) {
         }}>
         {children(dismiss)}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
