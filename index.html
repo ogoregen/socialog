@@ -160,13 +160,12 @@
           touchRef.current.direction = 'h';
         }
         touchRef.current.dragging = true;
-        touchRef.current.lastDx   = dx;
         const cur = TABS.findIndex(t => t.id === tab);
-        // Rubber-band resistance at edges: clamp dx so the first/last tab can't
-        // slide freely into dead space. Allow a damped 20% bleed for feel.
+        // Hard-clamp at edges: first/last tab never slides into empty space at all.
         const atStart = cur === 0 && dx > 0;
         const atEnd   = cur === TABS.length - 1 && dx < 0;
-        const clampedDx = (atStart || atEnd) ? dx * 0.2 : dx;
+        const clampedDx = (atStart || atEnd) ? 0 : dx;
+        touchRef.current.lastDx = clampedDx;
         TABS.forEach(({ id }, idx) => {
           const el = tabRefs.current[id];
           if (!el) return;
@@ -185,15 +184,15 @@
         if (next && (Math.abs(lastDx) > window.innerWidth * 0.35 || velocity > 0.5)) {
           setTab(next); // React re-render transitions from drag position to new tab
         } else {
-          // Scale snap-back duration to drag distance so small drags feel snappy
-          // and large drags feel proportional. ease-out suits return-to-origin motion.
+          // ease (not ease-out) starts slowly so the snap-back doesn't feel abrupt.
+          // Duration scales with distance; floor at 280ms so short drags aren't instant.
           const dist = Math.abs(lastDx);
-          const ms   = Math.max(120, Math.min(380, dist * 1.2));
+          const ms   = Math.max(280, Math.min(500, dist * 2));
           requestAnimationFrame(() => {
             TABS.forEach(({ id }, idx) => {
               const el = tabRefs.current[id];
               if (!el) return;
-              el.style.transition = `transform ${ms}ms ease-out`;
+              el.style.transition = `transform ${ms}ms ease`;
               el.style.transform  = `translateX(${(idx - cur) * 100}%)`;
             });
           });
