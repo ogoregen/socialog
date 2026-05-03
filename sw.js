@@ -1,10 +1,11 @@
-const CACHE = 'socialog-v2';
+const CACHE = 'socialog-v3';
 
 const LOCAL = [
   '/',
   '/index.html',
   '/utils.js',
   '/toast.jsx',
+  '/bottom-sheet.jsx',
   '/tweaks-panel.jsx',
   '/Bookmarks.jsx',
   '/Todos.jsx',

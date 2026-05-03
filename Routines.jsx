@@ -43,21 +43,14 @@ function RoutineModal({ routine, onSave, onClose }) {
   const TIME_OPTIONS = ['morning', 'afternoon', 'evening', 'anytime'];
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 200,
-      display: 'flex', alignItems: 'flex-end', animation: 'backdrop-in 0.25s ease forwards',
-    }} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{
-        background: 'var(--bg)', borderRadius: '20px 20px 0 0', width: '100%',
-        maxHeight: '85vh', overflowY: 'auto', padding: '0 0 40px',
-        animation: 'sheet-up 0.35s cubic-bezier(0.32,0.72,0,1) forwards',
-      }}>
+    <BottomSheet onClose={onClose}>
+      {dismiss => (<>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 4px' }}>
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border)' }}></div>
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border)' }} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 16px' }}>
           <span style={{ fontSize: 17, fontWeight: 600 }}>{form.title ? 'Edit routine' : 'New routine'}</span>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, color: 'var(--fg-muted)', cursor: 'pointer', lineHeight: 1, padding: 0 }}>×</button>
+          <button onClick={dismiss} style={{ background: 'none', border: 'none', fontSize: 22, color: 'var(--fg-muted)', cursor: 'pointer', lineHeight: 1, padding: 0 }}>×</button>
         </div>
 
         <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -135,8 +128,8 @@ function RoutineModal({ routine, onSave, onClose }) {
             Save routine
           </button>
         </div>
-      </div>
-    </div>
+      </>)}
+    </BottomSheet>
   );
 }
 
