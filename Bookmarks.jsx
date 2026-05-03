@@ -392,14 +392,51 @@ function ListCard({ bm, onEdit, onDelete }) {
   );
 }
 
-// Cover types: masonry grid. Everything else: flat list below the grid.
+// movie/book = portrait cover (150%), music = square (100%), others = compact text card
 const COVER_TYPES = new Set(['movie', 'music', 'book']);
 
-// ── Grid card (cover types only) ──────────────────────────────────────────────
+// ── Grid card ─────────────────────────────────────────────────────────────────
 function GridCard({ bm, onEdit, onDelete }) {
   const typeInfo = BOOKMARK_TYPES[bm.type] || BOOKMARK_TYPES.article;
   const isDone   = bm.status === 'done';
   const subtitle = bm.meta?.artist || bm.meta?.author || bm.meta?.director || bm.meta?.source || typeInfo.label;
+
+  if (!COVER_TYPES.has(bm.type)) {
+    const titleEl = (
+      <div style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.35, marginBottom: 6,
+        display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+        {bm.title || '(untitled)'}
+      </div>
+    );
+    return (
+      <div style={{ position: 'relative', borderRadius: 10, background: 'var(--surface)', border: '1px solid var(--border)', overflow: 'hidden' }}>
+        {bm.coverUrl && (
+          <div style={{ position: 'relative', paddingTop: '60%', overflow: 'hidden' }}>
+            <img src={bm.coverUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
+        )}
+        <div style={{ padding: '10px 10px 8px' }}>
+          {!bm.coverUrl && <div style={{ fontSize: 22, opacity: 0.2, marginBottom: 6, lineHeight: 1 }}>{typeInfo.icon}</div>}
+          {bm.url
+            ? <a href={bm.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--fg)', textDecoration: 'none' }}>{titleEl}</a>
+            : titleEl}
+          {bm.rating > 0 && <div style={{ fontSize: 11, color: '#f59e0b', marginBottom: 4, letterSpacing: '-0.5px' }}>{'★'.repeat(bm.rating)}</div>}
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 20, border: '1px solid var(--border)', color: 'var(--fg-muted)', fontWeight: 600 }}>
+              {typeInfo.icon} {typeInfo.label}
+            </span>
+            <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 20, background: STATUS_COLORS[bm.status], color: '#fff', fontWeight: 700 }}>
+              {STATUS_LABELS[bm.status]}
+            </span>
+          </div>
+        </div>
+        <div style={{ position: 'absolute', top: 6, right: 6, display: 'flex', gap: 3 }}>
+          <button onClick={() => onEdit(bm)} style={{ background: 'rgba(0,0,0,0.12)', border: 'none', borderRadius: 6, fontSize: 10, color: 'var(--fg-muted)', cursor: 'pointer', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
+          <button onClick={() => onDelete(bm.id)} style={{ background: 'rgba(0,0,0,0.12)', border: 'none', borderRadius: 6, fontSize: 12, color: 'var(--fg-muted)', cursor: 'pointer', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+        </div>
+      </div>
+    );
+  }
 
   const aspectPct = bm.type === 'music' ? '100%' : '150%';
 
@@ -512,9 +549,6 @@ function Bookmarks() {
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
 
-  const coverItems = sorted.filter(b => COVER_TYPES.has(b.type));
-  const listItems  = sorted.filter(b => !COVER_TYPES.has(b.type));
-
   const want  = items.filter(b => b.status === 'want to try').length;
   const doing = items.filter(b => b.status === 'in progress').length;
   const done  = items.filter(b => b.status === 'done').length;
@@ -573,22 +607,15 @@ function Bookmarks() {
       </div>
 
       {/* Cards */}
-      {view === 'grid' ? (<>
-        {coverItems.length > 0 && (
-          <div style={{ columnCount: 2, columnGap: 12, marginBottom: listItems.length > 0 ? 24 : 0 }}>
-            {coverItems.map(bm => (
-              <div key={bm.id} style={{ breakInside: 'avoid', display: 'block', marginBottom: 20 }}>
-                <GridCard bm={bm} onEdit={b => setModal(b)} onDelete={handleDelete} />
-              </div>
-            ))}
-          </div>
-        )}
-        {listItems.length > 0 && (
-          <div>
-            {listItems.map(bm => <ListCard key={bm.id} bm={bm} onEdit={b => setModal(b)} onDelete={handleDelete} />)}
-          </div>
-        )}
-      </>) : (
+      {view === 'grid' ? (
+        <div style={{ columnCount: 2, columnGap: 12 }}>
+          {sorted.map(bm => (
+            <div key={bm.id} style={{ breakInside: 'avoid', display: 'block', marginBottom: 12 }}>
+              <GridCard bm={bm} onEdit={b => setModal(b)} onDelete={handleDelete} />
+            </div>
+          ))}
+        </div>
+      ) : (
         <div>
           {sorted.map(bm => <ListCard key={bm.id} bm={bm} onEdit={b => setModal(b)} onDelete={handleDelete} />)}
         </div>
