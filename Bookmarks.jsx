@@ -81,6 +81,28 @@ function parseTitleFromHtml(html) {
   return null;
 }
 
+// Cross-browser AbortSignal helper (AbortSignal.timeout not on iOS < 16)
+function abortAfter(ms) {
+  const c = new AbortController();
+  setTimeout(() => c.abort(), ms);
+  return c.signal;
+}
+
+// Cross-browser Promise.any (not on Chrome < 85 / Samsung Internet < 12)
+function promiseAny(promises) {
+  return new Promise((resolve, reject) => {
+    let remaining = promises.length;
+    const errors = [];
+    if (!remaining) { reject(errors); return; }
+    promises.forEach((p, i) => {
+      Promise.resolve(p).then(resolve).catch(err => {
+        errors[i] = err;
+        if (--remaining === 0) reject(errors);
+      });
+    });
+  });
+}
+
 // ── Smart title extraction from URL ──────────────────────────────────────────
 function extractSmartMeta(url) {
   try {
@@ -113,9 +135,9 @@ async function fetchSmartTitle(url) {
   const smart = extractSmartMeta(url);
 
   // Try oEmbed first (no proxy needed, CORS-friendly)
-  if (smart?.parseOembed) {
+  if (smart && smart.parseOembed) {
     try {
-      const res = await fetch(smart.fetchUrl, { signal: AbortSignal.timeout(5000) });
+      const res = await fetch(smart.fetchUrl, { signal: abortAfter(5000) });
       if (res.ok) {
         const data = await res.json();
         if (data.title) return { title: data.title, coverUrl: data.thumbnail_url || '' };
@@ -135,14 +157,14 @@ async function fetchSmartTitle(url) {
   };
 
   try {
-    return await Promise.any([
+    return await promiseAny([
       tryProxy(async () => {
-        const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(5000) });
+        const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, { signal: abortAfter(5000) });
         if (!r.ok) return null;
         return (await r.json()).contents || null;
       }),
       tryProxy(async () => {
-        const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(5000) });
+        const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { signal: abortAfter(5000) });
         if (!r.ok) return null;
         return r.text();
       }),
@@ -457,6 +479,8 @@ function Bookmarks() {
     return true;
   });
 
+  const modalBm = modal ? (modal.bm != null ? modal.bm : modal) : null;
+
   return (
     <div style={{ padding: '20px 20px 60px' }}>
       <QuickAdd onPreview={(bm, fetchPromise) => setModal({ bm, fetchPromise })} />
@@ -508,9 +532,9 @@ function Bookmarks() {
         </div>
       )}
 
-      {modal && (() => { const bm = modal.bm ?? modal; return (
-        <BookmarkModal bm={bm} fetchPromise={modal.fetchPromise} isNew={!items.find(b => b.id === bm.id)} onSave={handleSave} onClose={() => setModal(null)} />
-      ); })()}
+      {modalBm && (
+        <BookmarkModal bm={modalBm} fetchPromise={modal.fetchPromise} isNew={!items.find(b => b.id === modalBm.id)} onSave={handleSave} onClose={() => setModal(null)} />
+      )}
     </div>
   );
 }
