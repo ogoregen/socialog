@@ -96,7 +96,34 @@ function extractSmartMeta(url) {
   return null;
 }
 
+async function fetchGoodreadsBook(url) {
+  const match = url.match(/goodreads\.com\/book\/show\/\d+-([a-z0-9-]+)/i);
+  if (!match) return null;
+  const query = match[1].replace(/-/g, ' ').trim();
+  try {
+    const res = await fetch(
+      `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(query)}&maxResults=1`,
+      { signal: abortAfter(5000) }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const item = data.items && data.items[0];
+    if (!item) return null;
+    const info = item.volumeInfo;
+    const title    = info.title || query;
+    const coverUrl = ((info.imageLinks && info.imageLinks.thumbnail) || '')
+                       .replace('http:', 'https:').replace('zoom=1', 'zoom=0');
+    const author   = (info.authors && info.authors[0]) || '';
+    const year     = (info.publishedDate || '').slice(0, 4);
+    return { title, coverUrl, meta: { author, year } };
+  } catch (e) { return null; }
+}
+
 async function fetchSmartTitle(url) {
+  if (/goodreads\.com/.test(url)) {
+    const result = await fetchGoodreadsBook(url);
+    if (result) return result;
+  }
   const smart = extractSmartMeta(url);
   if (smart && smart.parseOembed) {
     try {
@@ -202,7 +229,7 @@ function BookmarkModal({ bm, isNew, fetchPromise, onSave, onClose }) {
     let alive = true;
     fetchPromise.then(result => {
       if (!alive) return;
-      if (result?.title) setForm(f => ({ ...f, title: result.title, coverUrl: result.coverUrl || f.coverUrl }));
+      if (result?.title) setForm(f => ({ ...f, title: result.title, coverUrl: result.coverUrl || f.coverUrl, meta: result.meta ? { ...f.meta, ...result.meta } : f.meta }));
       setFetching(false);
     }).catch(() => { if (alive) setFetching(false); });
     return () => { alive = false; };
