@@ -1,4 +1,4 @@
-// Bookmarks — archive-style with cover grid, ratings, and log dates
+// Archive — cover grid (movie/music) + list rows (everything else), ratings, log dates
 
 const BOOKMARK_TYPES = {
   music:   { label: 'Music',   icon: '♪', fields: ['artist','genre','year'] },
@@ -7,7 +7,7 @@ const BOOKMARK_TYPES = {
   article: { label: 'Article', icon: '§', fields: ['source','author'] },
   place:   { label: 'Place',   icon: '◈', fields: ['location','cuisine','hours'] },
   recipe:  { label: 'Recipe',  icon: '✦', fields: ['cuisine','time','servings'] },
-  product: { label: 'Product', icon: '◇', fields: ['brand','price','category'] },
+  other:   { label: 'Other',   icon: '◇', fields: ['source','category'] },
 };
 
 const STATUS_OPTIONS = ['want to try', 'in progress', 'done'];
@@ -21,7 +21,7 @@ const TYPE_RULES = [
   { pattern: /goodreads\.com|books\.google\.com|openlibrary\.org|audible\.com|librarything\.com/, type: 'book' },
   { pattern: /maps\.google\.com|maps\.app\.goo\.gl|share\.google|goo\.gl\/maps|yelp\.com|tripadvisor\.com|foursquare\.com|opentable\.com|maps\.apple\.com/, type: 'place' },
   { pattern: /allrecipes\.com|food\.com|seriouseats\.com|bonappetit\.com|epicurious\.com|cooking\.nytimes\.com|tasty\.co/, type: 'recipe' },
-  { pattern: /amazon\.com|etsy\.com|shopify\.com|ebay\.com|bestbuy\.com|walmart\.com|shop\./, type: 'product' },
+  { pattern: /amazon\.com|etsy\.com|shopify\.com|ebay\.com|bestbuy\.com|walmart\.com|shop\./, type: 'other' },
   { pattern: /youtube\.com|youtu\.be|vimeo\.com/, type: 'movie' },
 ];
 
@@ -203,7 +203,7 @@ function QuickAdd({ onPreview }) {
       background: 'var(--surface)', border: '1px solid var(--border)',
       borderRadius: 14, padding: '10px 12px', marginBottom: 16,
     }}>
-      <span style={{ color: 'var(--fg-muted)', fontSize: 14, flexShrink: 0 }}>★</span>
+      <span style={{ color: 'var(--fg-muted)', fontSize: 14, flexShrink: 0 }}>▣</span>
       <input
         value={url} onChange={e => setUrl(e.target.value)} onPaste={handlePaste}
         placeholder="Paste a link to save it…"
@@ -256,7 +256,7 @@ function BookmarkModal({ bm, isNew, fetchPromise, onSave, onClose }) {
           <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border)' }} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 16px' }}>
-          <span style={{ fontSize: 17, fontWeight: 600 }}>{isNew ? 'Add to library' : 'Edit'}</span>
+          <span style={{ fontSize: 17, fontWeight: 600 }}>{isNew ? 'Add to archive' : 'Edit'}</span>
           <button onClick={dismiss} style={{ background: 'none', border: 'none', fontSize: 22, color: 'var(--fg-muted)', cursor: 'pointer', lineHeight: 1, padding: 0 }}>×</button>
         </div>
 
@@ -341,7 +341,7 @@ function BookmarkModal({ bm, isNew, fetchPromise, onSave, onClose }) {
           <button onClick={() => onSave(form)} style={{
             width: '100%', padding: '14px', borderRadius: 12, background: 'var(--fg)',
             color: 'var(--bg)', border: 'none', fontSize: 15, fontWeight: 600, cursor: 'pointer', marginTop: 4,
-          }}>{isNew ? 'Add to library' : 'Save changes'}</button>
+          }}>{isNew ? 'Add to archive' : 'Save changes'}</button>
         </div>
       </>)}
     </BottomSheet>
@@ -389,26 +389,53 @@ function ListCard({ bm, onEdit, onDelete }) {
 }
 
 // ── Grid card ─────────────────────────────────────────────────────────────────
+// movie = portrait cover (150%), music = square cover (100%),
+// everything else = compact list row that flows into the masonry column.
 function GridCard({ bm, onEdit, onDelete }) {
   const typeInfo = BOOKMARK_TYPES[bm.type] || BOOKMARK_TYPES.article;
   const isDone   = bm.status === 'done';
   const subtitle = bm.meta?.artist || bm.meta?.author || bm.meta?.director || bm.meta?.source || typeInfo.label;
 
+  if (bm.type !== 'movie' && bm.type !== 'music') {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ width: 36, height: 36, borderRadius: 6, flexShrink: 0, overflow: 'hidden', background: 'var(--surface)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: 'var(--fg-muted)' }}>
+          {bm.coverUrl
+            ? <img src={bm.coverUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : <span style={{ opacity: 0.4 }}>{typeInfo.icon}</span>}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {bm.url
+            ? <a href={bm.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--fg)', textDecoration: 'none' }}>
+                <div style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bm.title || '(untitled)'}</div>
+              </a>
+            : <div style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bm.title || '(untitled)'}</div>
+          }
+          <div style={{ fontSize: 10, color: 'var(--fg-muted)', marginTop: 1 }}>{isDone && bm.doneAt ? formatLogDate(bm.doneAt) : subtitle}</div>
+        </div>
+        <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
+          <button onClick={() => onEdit(bm)} style={{ background: 'var(--border)', border: 'none', borderRadius: 6, fontSize: 11, color: 'var(--fg-muted)', cursor: 'pointer', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
+          <button onClick={() => onDelete(bm.id)} style={{ background: 'var(--border)', border: 'none', borderRadius: 6, fontSize: 13, color: 'var(--fg-muted)', cursor: 'pointer', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+        </div>
+      </div>
+    );
+  }
+
+  const aspectPct = bm.type === 'music' ? '100%' : '150%';
+
   return (
     <div>
       {/* Cover */}
-      <div style={{ position: 'relative', paddingTop: '150%', borderRadius: 10, overflow: 'hidden', background: 'var(--surface)', border: '1px solid var(--border)', marginBottom: 8 }}>
+      <div style={{ position: 'relative', paddingTop: aspectPct, borderRadius: 10, overflow: 'hidden', background: 'var(--surface)', border: '1px solid var(--border)', marginBottom: 8 }}>
         {bm.coverUrl
           ? <img src={bm.coverUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
           : <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, opacity: 0.2 }}>{typeInfo.icon}</div>
         }
-        {/* Status badge */}
         <div style={{ position: 'absolute', top: 8, left: 8 }}>
           <span style={{ background: STATUS_COLORS[bm.status], color: '#fff', fontSize: 9, fontWeight: 700, borderRadius: 8, padding: '3px 7px' }}>
             {STATUS_LABELS[bm.status]}
           </span>
         </div>
-        {/* Actions */}
         <div style={{ position: 'absolute', top: 6, right: 6, display: 'flex', flexDirection: 'column', gap: 4 }}>
           <button onClick={() => onEdit(bm)} style={{ background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: 6, fontSize: 11, color: '#fff', cursor: 'pointer', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
           <button onClick={() => onDelete(bm.id)} style={{ background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: 6, fontSize: 14, color: '#fff', cursor: 'pointer', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
@@ -471,7 +498,7 @@ function Bookmarks() {
       const next = [...prev]; next[idx] = updated; return next;
     });
     closeModal();
-    showToast(wasNew ? 'Added to library' : 'Updated');
+    showToast(wasNew ? 'Saved to archive' : 'Updated');
   }
 
   function handleDelete(id) {
@@ -546,8 +573,12 @@ function Bookmarks() {
 
       {/* Cards */}
       {view === 'grid'
-        ? <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px 12px' }}>
-            {filtered.map(bm => <GridCard key={bm.id} bm={bm} onEdit={b => setModal(b)} onDelete={handleDelete} />)}
+        ? <div style={{ columnCount: 2, columnGap: 12 }}>
+            {filtered.map(bm => (
+              <div key={bm.id} style={{ breakInside: 'avoid', display: 'block', marginBottom: (bm.type === 'movie' || bm.type === 'music') ? 20 : 0 }}>
+                <GridCard bm={bm} onEdit={b => setModal(b)} onDelete={handleDelete} />
+              </div>
+            ))}
           </div>
         : <div>
             {filtered.map(bm => <ListCard key={bm.id} bm={bm} onEdit={b => setModal(b)} onDelete={handleDelete} />)}
@@ -556,7 +587,7 @@ function Bookmarks() {
 
       {filtered.length === 0 && (
         <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--fg-muted)' }}>
-          <div style={{ fontSize: 32, marginBottom: 16, opacity: 0.2 }}>★</div>
+          <div style={{ fontSize: 32, marginBottom: 16, opacity: 0.2 }}>▣</div>
           <div style={{ fontSize: 13, opacity: 0.5 }}>{items.length ? 'Nothing matches' : 'Paste a link to save it'}</div>
         </div>
       )}

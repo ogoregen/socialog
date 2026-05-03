@@ -2,7 +2,7 @@
 
 const HOME_TYPE_ICONS = {
   music: '♪', movie: '▶', book: '◻', article: '§',
-  place: '◈', recipe: '✦', product: '◇', event: '◉',
+  place: '◈', recipe: '✦', other: '◇', event: '◉',
 };
 
 // ── Monthly habit streak grid ─────────────────────────────────────────────────
@@ -219,7 +219,7 @@ function Home({ onNavigate }) {
           {savedToday.map(b => (
             <div key={b.id} data-tap="" onClick={() => onNavigate('bookmarks')} style={rowStyle}>
               <span style={{ fontSize: 15, flexShrink: 0, opacity: 0.5, width: 20, textAlign: 'center', display: 'inline-block' }}>
-                {HOME_TYPE_ICONS[b.type] || '★'}
+                {HOME_TYPE_ICONS[b.type] || '▣'}
               </span>
               <span style={{ fontSize: 14, fontWeight: 500, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {b.title || b.url}
