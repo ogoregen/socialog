@@ -1,20 +1,23 @@
-const CACHE = 'socialog-v3';
+const CACHE = 'socialog-v4';
 
+// Relative paths resolve correctly whether the app is at the root or a subpath
+// (e.g. GitHub Pages at /socialog/). Absolute paths like '/index.html' would
+// resolve to the domain root and 404 on project-page deployments.
 const LOCAL = [
-  '/',
-  '/index.html',
-  '/utils.js',
-  '/toast.jsx',
-  '/bottom-sheet.jsx',
-  '/tweaks-panel.jsx',
-  '/Bookmarks.jsx',
-  '/Todos.jsx',
-  '/Routines.jsx',
-  '/Home.jsx',
-  '/manifest.json',
-  '/icons/icon-180.png',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
+  './',
+  './index.html',
+  './utils.js',
+  './toast.jsx',
+  './bottom-sheet.jsx',
+  './tweaks-panel.jsx',
+  './Bookmarks.jsx',
+  './Todos.jsx',
+  './Routines.jsx',
+  './Home.jsx',
+  './manifest.json',
+  './icons/icon-180.png',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
 ];
 
 const CDN = [
