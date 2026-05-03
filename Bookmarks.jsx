@@ -82,47 +82,25 @@ function extractSmartMeta(url) {
   return null;
 }
 
-async function fetchGoodreadsBook(url) {
-  // Handles /book/show/123-slug and /book/show/123.Title_Words
-  const match = url.match(/goodreads\.com\/book\/show\/\d+[-.]([^/?#]+)/i);
-  if (!match) return null;
-  const query = match[1].replace(/[-_]/g, ' ').trim();
-  try {
-    const res = await fetch(
-      `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(query)}&maxResults=1`,
-      { signal: abortAfter(5000) }
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    const item = data.items && data.items[0];
-    if (!item) return null;
-    const info = item.volumeInfo;
-    const title    = info.title || query;
-    const coverUrl = ((info.imageLinks && info.imageLinks.thumbnail) || '')
-                       .replace('http:', 'https:').replace('zoom=1', 'zoom=0');
-    const author   = (info.authors && info.authors[0]) || '';
-    const year     = (info.publishedDate || '').slice(0, 4);
-    return { title, coverUrl, meta: { author, year } };
-  } catch (e) { return null; }
-}
-
 async function fetchSmartTitle(url) {
+  // Goodreads: Jina returns the page with JSON-LD containing name, author[], and image
   if (/goodreads\.com/.test(url)) {
-    const result = await fetchGoodreadsBook(url);
-    if (result) return result;
-    // Fallback for ID-only URLs: Jina returns og:title as "Title by Author | Goodreads"
     try {
       const res = await fetch(`https://r.jina.ai/${url}`, {
         headers: { 'X-Return-Format': 'html' },
-        signal: abortAfter(10000),
+        signal: abortAfter(12000),
       });
       if (res.ok) {
-        const parsed = parseTitleFromHtml(await res.text());
-        if (parsed?.title) {
-          const m = parsed.title.match(/^(.+?)\s+by\s+([^|]+?)(?:\s*\|.*)?$/i);
-          return m
-            ? { title: m[1].trim(), coverUrl: parsed.coverUrl, meta: { author: m[2].trim() } }
-            : parsed;
+        const html = await res.text();
+        const ldMatch = html.match(/<script type="application\/ld\+json"[^>]*>([^<]+)<\/script>/i);
+        if (ldMatch) {
+          const ld = JSON.parse(ldMatch[1]);
+          if (ld['@type'] === 'Book' && ld.name) {
+            const authorEntry = Array.isArray(ld.author) ? ld.author[0] : ld.author;
+            const author = authorEntry?.name || '';
+            const coverUrl = (ld.image || '').replace('http:', 'https:');
+            return { title: ld.name, coverUrl, meta: { author } };
+          }
         }
       }
     } catch (e) {}
@@ -141,22 +119,27 @@ async function fetchSmartTitle(url) {
     } catch (e) {}
   }
 
-  // Spotify: Jina gets og:title (track/album) + og:image, page <title> has "Track - Artist | Spotify"
+  // Spotify: embed page is SSR and has __NEXT_DATA__ with entity name, artists[], and cover images
   if (/spotify\.com/.test(url)) {
     try {
-      const res = await fetch(`https://r.jina.ai/${url}`, {
+      const u = new URL(url);
+      const embedUrl = `https://open.spotify.com/embed${u.pathname}`;
+      const res = await fetch(`https://r.jina.ai/${embedUrl}`, {
         headers: { 'X-Return-Format': 'html' },
         signal: abortAfter(10000),
       });
       if (res.ok) {
         const html = await res.text();
-        const parsed = parseTitleFromHtml(html);
-        if (parsed?.title) {
-          const ptMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-          const artist = ptMatch
-            ? (decodeHtmlEntities(ptMatch[1]).match(/^.+?[–\-]\s*(.+?)\s*[|·•]\s*Spotify/i) || [])[1]?.trim() || ''
-            : '';
-          return { ...parsed, ...(artist && { meta: { artist } }) };
+        const dataMatch = html.match(/<script id="__NEXT_DATA__"[^>]*>([^<]+)<\/script>/);
+        if (dataMatch) {
+          const data = JSON.parse(dataMatch[1]);
+          const entity = data?.props?.pageProps?.state?.data?.entity;
+          if (entity?.name) {
+            const artist = entity.artists?.[0]?.name || '';
+            const images = entity.visualIdentity?.image || [];
+            const largest = images.reduce((a, b) => (b.maxHeight > a.maxHeight ? b : a), { maxHeight: 0, url: '' });
+            return { title: entity.name, coverUrl: largest.url || '', ...(artist && { meta: { artist } }) };
+          }
         }
       }
     } catch (e) {}
