@@ -62,13 +62,30 @@ function getBucket(iso) {
   return 'later';
 }
 
-function TaskModal({ allCats, onSave, onClose }) {
-  const [text, setText]       = React.useState('');
-  const [cat, setCat]         = React.useState(null);
-  const [dueDate, setDueDate] = React.useState(null);
-  const inputRef = React.useRef();
+function TaskModal({ allCats, onAddCat, onSave, onClose }) {
+  const [text, setText]           = React.useState('');
+  const [cat, setCat]             = React.useState(null);
+  const [dueDate, setDueDate]     = React.useState(null);
+  const [addingCat, setAddingCat] = React.useState(false);
+  const [newCatName, setNewCatName]   = React.useState('');
+  const [newCatColor, setNewCatColor] = React.useState(CAT_PALETTE[0]);
+  const inputRef  = React.useRef();
+  const newCatRef = React.useRef();
 
   React.useEffect(() => { setTimeout(() => inputRef.current?.focus(), 80); }, []);
+
+  function saveNewCat() {
+    const label = newCatName.trim();
+    if (!label) return;
+    const id = 'custom_' + uid();
+    const usedColors = allCats.map(c => c.color);
+    const color = newCatColor || CAT_PALETTE.find(p => !usedColors.includes(p)) || CAT_PALETTE[0];
+    onAddCat({ id, label, color, custom: true });
+    setCat(id);
+    setNewCatName('');
+    setNewCatColor(CAT_PALETTE[0]);
+    setAddingCat(false);
+  }
 
   const dueFmt = formatDueDate(dueDate);
   const pillSt = duePillStyle(dueFmt);
@@ -102,22 +119,56 @@ function TaskModal({ allCats, onSave, onClose }) {
               border: '1px solid var(--border)', borderRadius: 8, color: 'var(--fg)',
               fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }}
           />
-          {allCats.length > 0 && (
-            <div>
-              <span style={labelStyle}>Category</span>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {allCats.map(c => (
-                  <button key={c.id} onClick={() => setCat(cat === c.id ? null : c.id)} style={{
-                    padding: '6px 14px', borderRadius: 20, fontSize: 11, fontWeight: 500,
-                    cursor: 'pointer', border: '1px solid', transition: 'all 0.15s',
-                    background: cat === c.id ? c.color : 'transparent',
-                    color: cat === c.id ? '#fff' : 'var(--fg-muted)',
-                    borderColor: cat === c.id ? c.color : 'var(--border)',
-                  }}>{c.label}</button>
-                ))}
-              </div>
+          <div>
+            <span style={labelStyle}>Category</span>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+              {allCats.map(c => (
+                <button key={c.id} onClick={() => setCat(cat === c.id ? null : c.id)} style={{
+                  padding: '6px 14px', borderRadius: 20, fontSize: 11, fontWeight: 500,
+                  cursor: 'pointer', border: '1px solid', transition: 'all 0.15s',
+                  background: cat === c.id ? c.color : 'transparent',
+                  color: cat === c.id ? '#fff' : 'var(--fg-muted)',
+                  borderColor: cat === c.id ? c.color : 'var(--border)',
+                }}>{c.label}</button>
+              ))}
+              {!addingCat && (
+                <button onClick={() => { setAddingCat(true); setTimeout(() => newCatRef.current?.focus(), 50); }} style={{
+                  padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500,
+                  cursor: 'pointer', border: '1px solid var(--border)',
+                  background: 'transparent', color: 'var(--fg-muted)', opacity: 0.5,
+                }}>+ add</button>
+              )}
             </div>
-          )}
+            {addingCat && (
+              <div style={{ marginTop: 10, background: 'var(--surface)', border: '1px solid var(--border)',
+                borderRadius: 12, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <input ref={newCatRef} value={newCatName} onChange={e => setNewCatName(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') saveNewCat(); if (e.key === 'Escape') setAddingCat(false); }}
+                  placeholder="Category name…"
+                  style={{ background: 'none', border: 'none', outline: 'none', fontSize: 13, color: 'var(--fg)', fontFamily: 'inherit' }} />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {CAT_PALETTE.map(p => (
+                      <button key={p} onClick={() => setNewCatColor(p)} style={{
+                        width: 20, height: 20, borderRadius: '50%', background: p, border: 'none', cursor: 'pointer',
+                        outline: newCatColor === p ? `2px solid ${p}` : 'none', outlineOffset: 2,
+                      }} />
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button onClick={() => setAddingCat(false)} style={{
+                      background: 'var(--border)', border: 'none', borderRadius: 8, fontSize: 11,
+                      color: 'var(--fg-muted)', cursor: 'pointer', padding: '6px 12px',
+                    }}>Cancel</button>
+                    <button onClick={saveNewCat} style={{
+                      background: newCatColor, border: 'none', borderRadius: 8, fontSize: 11,
+                      color: '#fff', cursor: 'pointer', padding: '6px 12px', fontWeight: 600,
+                    }}>Save</button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
           <div>
             <span style={labelStyle}>Due date</span>
             <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center',
@@ -154,28 +205,16 @@ function TaskModal({ allCats, onSave, onClose }) {
 function Todos() {
   const [items, setItems]           = React.useState(() => load('todos') || []);
   const [customCats, setCustomCats] = React.useState(() => load('categories') || DEFAULT_CATS);
-  const [modal, setModal]           = React.useState(false);
-  const [catFilter, setCatFilter]   = React.useState(null);
-  const [addingCat, setAddingCat]   = React.useState(false);
-  const [newCatName, setNewCatName] = React.useState('');
-  const [newCatColor, setNewCatColor] = React.useState(CAT_PALETTE[0]);
-  const newCatRef = React.useRef();
+  const [modal, setModal]         = React.useState(false);
+  const [catFilter, setCatFilter] = React.useState(null);
 
   const allCats = customCats;
 
   React.useEffect(() => { save('todos', items); }, [items]);
   React.useEffect(() => { save('categories', customCats); }, [customCats]);
 
-  function saveNewCat() {
-    const label = newCatName.trim();
-    if (!label) return;
-    const id = 'custom_' + uid();
-    const usedColors = allCats.map(c => c.color);
-    const color = newCatColor || CAT_PALETTE.find(p => !usedColors.includes(p)) || CAT_PALETTE[customCats.length % CAT_PALETTE.length];
-    setCustomCats(prev => [...prev, { id, label, color, custom: true }]);
-    setNewCatName('');
-    setNewCatColor(CAT_PALETTE[(customCats.length + 1) % CAT_PALETTE.length]);
-    setAddingCat(false);
+  function addCustomCat(cat) {
+    setCustomCats(prev => [...prev, cat]);
   }
 
   function deleteCustomCat(id) {
@@ -216,8 +255,6 @@ function Todos() {
   const shownActive = catFilter ? active.filter(t => t.category === catFilter) : active;
   const shownDone   = catFilter ? done.filter(t => t.category === catFilter) : done;
 
-  const usedCats = allCats.filter(c => items.some(t => t.category === c.id));
-
   return (
     <div style={{ padding: '20px 20px 60px' }}>
       {/* Add bar */}
@@ -237,9 +274,10 @@ function Todos() {
         }}>+</button>
       </div>
 
-      {/* Category filter pills + new category */}
-      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: addingCat ? 10 : 20, flexWrap: 'nowrap' }}>
-        {usedCats.length > 0 && [null, ...usedCats].map(c => {
+      {/* Category filter pills */}
+      {allCats.length > 0 && (
+      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 20, flexWrap: 'nowrap' }}>
+        {[null, ...allCats].map(c => {
           const isAll = c === null;
           const active = catFilter === (isAll ? null : c.id);
           const cc = isAll ? null : c.color;
@@ -275,44 +313,7 @@ function Todos() {
             </div>
           );
         })}
-        <button onClick={() => { setAddingCat(true); setTimeout(() => newCatRef.current?.focus(), 50); }} style={{
-          padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 500,
-          cursor: 'pointer', border: '1px solid var(--border)', whiteSpace: 'nowrap', flexShrink: 0,
-          background: 'transparent', color: 'var(--fg-muted)', opacity: 0.5,
-        }}>+ category</button>
       </div>
-
-      {/* Inline new category form */}
-      {addingCat && (
-        <div style={{
-          background: 'var(--surface)', border: '1px solid var(--border)',
-          borderRadius: 12, padding: '12px 14px', marginBottom: 20,
-          display: 'flex', flexDirection: 'column', gap: 10,
-        }}>
-          <input ref={newCatRef} value={newCatName} onChange={e => setNewCatName(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') saveNewCat(); if (e.key === 'Escape') setAddingCat(false); }}
-            placeholder="Category name…"
-            style={{ background: 'none', border: 'none', outline: 'none', fontSize: 13, color: 'var(--fg)', fontFamily: 'inherit' }} />
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {CAT_PALETTE.map(p => (
-                <button key={p} onClick={() => setNewCatColor(p)} style={{
-                  width: 20, height: 20, borderRadius: '50%', background: p, border: 'none', cursor: 'pointer',
-                  outline: newCatColor === p ? `2px solid ${p}` : 'none', outlineOffset: 2,
-                }} />
-              ))}
-            </div>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <button onClick={() => setAddingCat(false)} style={{
-                background: 'var(--border)', border: 'none', borderRadius: 8, fontSize: 11,
-                color: 'var(--fg-muted)', cursor: 'pointer', padding: '6px 12px',
-              }}>Cancel</button>
-              <button onClick={saveNewCat} style={{
-                background: newCatColor, border: 'none', borderRadius: 8, fontSize: 11,
-                color: '#fff', cursor: 'pointer', padding: '6px 12px', fontWeight: 600,
-              }}>Save</button>
-            </div>
-          </div>
         </div>
       )}
 
@@ -361,7 +362,7 @@ function Todos() {
         </div>
       )}
 
-      {modal && <TaskModal allCats={allCats} onSave={handleAddTask} onClose={() => setModal(false)} />}
+      {modal && <TaskModal allCats={allCats} onAddCat={addCustomCat} onSave={handleAddTask} onClose={() => setModal(false)} />}
     </div>
   );
 }
