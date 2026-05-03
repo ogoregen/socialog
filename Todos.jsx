@@ -127,7 +127,7 @@ function TaskModal({ allCats, onAddCat, onSave, onClose }) {
             placeholder="What needs to be done?"
             style={{ width: '100%', padding: '10px 12px', background: 'var(--surface)',
               border: '1px solid var(--border)', borderRadius: 8, color: 'var(--fg)',
-              fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }}
+              fontSize: 16, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }}
           />
           <div>
             <span style={labelStyle}>Category</span>
@@ -155,7 +155,7 @@ function TaskModal({ allCats, onAddCat, onSave, onClose }) {
                 <input ref={newCatRef} value={newCatName} onChange={e => setNewCatName(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') saveNewCat(); if (e.key === 'Escape') setAddingCat(false); }}
                   placeholder="Category name…"
-                  style={{ background: 'none', border: 'none', outline: 'none', fontSize: 13, color: 'var(--fg)', fontFamily: 'inherit' }} />
+                  style={{ background: 'none', border: 'none', outline: 'none', fontSize: 16, color: 'var(--fg)', fontFamily: 'inherit' }} />
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     {CAT_PALETTE.map(p => (

@@ -67,6 +67,16 @@
 
     [data-tap] { cursor: pointer; transition: transform 0.1s; }
     [data-tap]:active { transform: scale(0.985); }
+
+    /* Native-app feel: no text selection on UI chrome */
+    body { -webkit-user-select: none; user-select: none; }
+    input, textarea { -webkit-user-select: text; user-select: text; }
+
+    /* Prevent "Save Image" sheet on long-press of images */
+    img { -webkit-touch-callout: none; }
+
+    /* iOS zoom prevention: inputs must be ≥ 16px */
+    input, textarea { font-size: 16px; }
   </style>
 </head>
 <body>

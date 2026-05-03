@@ -207,7 +207,8 @@ function QuickAdd({ onPreview }) {
       <input
         value={url} onChange={e => setUrl(e.target.value)} onPaste={handlePaste}
         placeholder="Paste a link to save it…"
-        style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: 14, color: 'var(--fg)', fontFamily: 'inherit' }}
+          inputMode="url" autoCorrect="off" autoCapitalize="none" spellCheck={false} autoComplete="off"
+        style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: 16, color: 'var(--fg)', fontFamily: 'inherit' }}
       />
       <button type="submit" disabled={loading} style={{
         background: 'var(--fg)', color: 'var(--bg)', border: 'none',
@@ -241,7 +242,7 @@ function BookmarkModal({ bm, isNew, fetchPromise, onSave, onClose }) {
   const inputStyle = {
     width: '100%', padding: '10px 12px', background: 'var(--surface)',
     border: '1px solid var(--border)', borderRadius: 8, color: 'var(--fg)',
-    fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
+    fontSize: 16, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
   };
   const labelStyle = {
     fontSize: 11, fontWeight: 600, letterSpacing: '0.08em',
@@ -283,12 +284,12 @@ function BookmarkModal({ bm, isNew, fetchPromise, onSave, onClose }) {
 
           <div>
             <label style={labelStyle}>URL</label>
-            <input style={inputStyle} value={form.url} onChange={e => set('url', e.target.value)} placeholder="https://…" />
+            <input style={inputStyle} value={form.url} onChange={e => set('url', e.target.value)} placeholder="https://…" inputMode="url" autoCorrect="off" autoCapitalize="none" spellCheck={false} autoComplete="off" />
           </div>
 
           <div>
             <label style={labelStyle}>Cover image URL</label>
-            <input style={inputStyle} value={form.coverUrl} onChange={e => set('coverUrl', e.target.value)} placeholder="https://image.jpg" />
+            <input style={inputStyle} value={form.coverUrl} onChange={e => set('coverUrl', e.target.value)} placeholder="https://image.jpg" inputMode="url" autoCorrect="off" autoCapitalize="none" spellCheck={false} autoComplete="off" />
           </div>
 
           {BOOKMARK_TYPES[form.type]?.fields.map(field => (
@@ -329,7 +330,7 @@ function BookmarkModal({ bm, isNew, fetchPromise, onSave, onClose }) {
 
           <div>
             <label style={labelStyle}>Tags (comma-separated)</label>
-            <input style={inputStyle} value={form.tags} onChange={e => set('tags', e.target.value)} placeholder="tag1, tag2…" />
+            <input style={inputStyle} value={form.tags} onChange={e => set('tags', e.target.value)} placeholder="tag1, tag2…" autoCorrect="off" autoCapitalize="none" spellCheck={false} />
           </div>
 
           <div>

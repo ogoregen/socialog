@@ -33,7 +33,7 @@ function RoutineModal({ routine, onSave, onClose }) {
   const inputStyle = {
     width: '100%', padding: '10px 12px', background: 'var(--surface)',
     border: '1px solid var(--border)', borderRadius: 8, color: 'var(--fg)',
-    fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
+    fontSize: 16, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
   };
   const labelStyle = {
     fontSize: 11, fontWeight: 600, letterSpacing: '0.08em',
