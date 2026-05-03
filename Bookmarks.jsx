@@ -22,7 +22,7 @@ const TYPE_RULES = [
   { pattern: /maps\.google\.com|maps\.app\.goo\.gl|share\.google|goo\.gl\/maps|yelp\.com|tripadvisor\.com|foursquare\.com|opentable\.com|maps\.apple\.com/, type: 'place' },
   { pattern: /allrecipes\.com|food\.com|seriouseats\.com|bonappetit\.com|epicurious\.com|cooking\.nytimes\.com|tasty\.co/, type: 'recipe' },
   { pattern: /amazon\.com|etsy\.com|shopify\.com|ebay\.com|bestbuy\.com|walmart\.com|shop\./, type: 'other' },
-  { pattern: /youtube\.com|youtu\.be|vimeo\.com/, type: 'movie' },
+  { pattern: /youtube\.com|youtu\.be|vimeo\.com|twitch\.tv|dailymotion\.com/, type: 'other' },
 ];
 
 function inferType(url) {
@@ -376,9 +376,14 @@ function ListCard({ bm, onEdit, onDelete }) {
         </div>
       </div>
 
-      <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 20, background: STATUS_COLORS[bm.status], color: '#fff', fontWeight: 700, flexShrink: 0 }}>
-        {STATUS_LABELS[bm.status]}
-      </span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-end', flexShrink: 0 }}>
+        <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 20, border: '1px solid var(--border)', color: 'var(--fg-muted)', fontWeight: 600, whiteSpace: 'nowrap' }}>
+          {typeInfo.icon} {typeInfo.label}
+        </span>
+        <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 20, background: STATUS_COLORS[bm.status], color: '#fff', fontWeight: 700, whiteSpace: 'nowrap' }}>
+          {STATUS_LABELS[bm.status]}
+        </span>
+      </div>
 
       <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
         <button onClick={() => onEdit(bm)} style={{ background: 'var(--border)', border: 'none', borderRadius: 7, fontSize: 11, color: 'var(--fg-muted)', cursor: 'pointer', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
@@ -407,9 +412,12 @@ function GridCard({ bm, onEdit, onDelete }) {
           ? <img src={bm.coverUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
           : <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, opacity: 0.2 }}>{typeInfo.icon}</div>
         }
-        <div style={{ position: 'absolute', top: 8, left: 8 }}>
+        <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
           <span style={{ background: STATUS_COLORS[bm.status], color: '#fff', fontSize: 9, fontWeight: 700, borderRadius: 8, padding: '3px 7px' }}>
             {STATUS_LABELS[bm.status]}
+          </span>
+          <span style={{ background: 'rgba(0,0,0,0.45)', color: '#fff', fontSize: 9, fontWeight: 600, borderRadius: 8, padding: '3px 7px' }}>
+            {typeInfo.label}
           </span>
         </div>
         <div style={{ position: 'absolute', top: 6, right: 6, display: 'flex', flexDirection: 'column', gap: 4 }}>
