@@ -115,15 +115,15 @@
       const [tab, setTab] = React.useState(
         () => localStorage.getItem('socialog_tab') || 'home'
       );
-      const scrollRef  = React.useRef(null);
+      const tabRefs    = React.useRef({});
       const touchRef   = React.useRef(null);
       const [tweaks, setTweaksState] = React.useState(TWEAK_DEFAULTS);
       const [tweaksOpen, setTweaksOpen] = React.useState(false);
 
-      // Persist active tab + reset scroll
+      // Persist active tab + reset scroll on the newly active tab
       React.useEffect(() => {
         localStorage.setItem('socialog_tab', tab);
-        scrollRef.current?.scrollTo(0, 0);
+        tabRefs.current[tab]?.scrollTo(0, 0);
       }, [tab]);
 
       // Apply theme
@@ -202,12 +202,25 @@
           <div style={{ height: 'env(safe-area-inset-top, 0px)', flexShrink: 0 }} />
 
           {/* ── Content ── */}
-          <div ref={scrollRef} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-            {tab === 'home'      && <Home onNavigate={setTab} />}
-            {tab === 'bookmarks' && <Bookmarks />}
-            {tab === 'todos'     && <Todos />}
-            {tab === 'routines'  && <Routines />}
-
+          <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}
+            style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+            {TABS.map(({ id }, idx) => {
+              const offset = (idx - TABS.findIndex(t => t.id === tab)) * 100;
+              return (
+                <div key={id} ref={el => tabRefs.current[id] = el} style={{
+                  position: 'absolute', inset: 0,
+                  overflowY: 'auto', overflowX: 'hidden',
+                  transform: `translateX(${offset}%)`,
+                  transition: 'transform 0.35s cubic-bezier(0.32,0.72,0,1)',
+                  pointerEvents: id === tab ? 'auto' : 'none',
+                }}>
+                  {id === 'home'      && <Home onNavigate={setTab} />}
+                  {id === 'bookmarks' && <Bookmarks />}
+                  {id === 'todos'     && <Todos />}
+                  {id === 'routines'  && <Routines />}
+                </div>
+              );
+            })}
           </div>
 
           {/* ── Bottom tab bar ── */}
