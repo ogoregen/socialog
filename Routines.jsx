@@ -273,8 +273,13 @@ function Routines() {
   }
 
   function handleDelete(id) {
+    const idx     = items.findIndex(r => r.id === id);
+    const deleted = items[idx];
     setItems(prev => prev.filter(r => r.id !== id));
-    showToast('Routine deleted');
+    showToast('Routine deleted', 4000, {
+      label: 'Undo',
+      fn: () => setItems(prev => { const next = [...prev]; next.splice(Math.min(idx, next.length), 0, deleted); return next; }),
+    });
   }
 
   const todayDayIdx = currentDayIndex();

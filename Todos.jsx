@@ -255,8 +255,13 @@ function Todos() {
   }
 
   function deleteItem(id) {
+    const idx     = items.findIndex(t => t.id === id);
+    const deleted = items[idx];
     setItems(prev => prev.filter(t => t.id !== id));
-    showToast('Task deleted');
+    showToast('Task deleted', 4000, {
+      label: 'Undo',
+      fn: () => setItems(prev => { const next = [...prev]; next.splice(Math.min(idx, next.length), 0, deleted); return next; }),
+    });
   }
 
   function clearDone() {

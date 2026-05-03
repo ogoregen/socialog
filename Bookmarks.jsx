@@ -473,8 +473,13 @@ function Bookmarks() {
   }
 
   function handleDelete(id) {
+    const idx     = items.findIndex(b => b.id === id);
+    const deleted = items[idx];
     setItems(prev => prev.filter(b => b.id !== id));
-    showToast('Bookmark deleted');
+    showToast('Bookmark deleted', 4000, {
+      label: 'Undo',
+      fn: () => setItems(prev => { const next = [...prev]; next.splice(Math.min(idx, next.length), 0, deleted); return next; }),
+    });
   }
 
   const filtered = items.filter(b => {
