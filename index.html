@@ -69,6 +69,7 @@
   <script type="text/babel" src="Bookmarks.jsx"></script>
   <script type="text/babel" src="Todos.jsx"></script>
   <script type="text/babel" src="Routines.jsx"></script>
+  <script type="text/babel" src="Home.jsx"></script>
 
   <script type="text/babel">
     // ── Tweaks defaults ───────────────────────────────────────────────────────
@@ -81,15 +82,16 @@
 
     // ── Tab config ────────────────────────────────────────────────────────────
     const TABS = [
+      { id: 'home',      label: 'Home',      icon: '◈' },
       { id: 'bookmarks', label: 'Bookmarks', icon: '★' },
-      { id: 'todos',     label: 'Tasks',    icon: '✓' },
-      { id: 'routines',  label: 'Routines', icon: '○' },
+      { id: 'todos',     label: 'Tasks',     icon: '✓' },
+      { id: 'routines',  label: 'Routines',  icon: '○' },
     ];
 
     // ── App shell ─────────────────────────────────────────────────────────────
     function App() {
       const [tab, setTab] = React.useState(
-        () => localStorage.getItem('socialog_tab') || 'todos'
+        () => localStorage.getItem('socialog_tab') || 'home'
       );
       const [tweaks, setTweaksState] = React.useState(TWEAK_DEFAULTS);
       const [tweaksOpen, setTweaksOpen] = React.useState(false);
@@ -165,6 +167,7 @@
 
           {/* ── Content ── */}
           <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+            {tab === 'home'      && <Home onNavigate={setTab} />}
             {tab === 'bookmarks' && <Bookmarks />}
             {tab === 'todos'     && <Todos />}
             {tab === 'routines'  && <Routines />}
