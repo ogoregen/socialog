@@ -102,7 +102,8 @@
       const [tab, setTab] = React.useState(
         () => localStorage.getItem('socialog_tab') || 'home'
       );
-      const scrollRef = React.useRef(null);
+      const scrollRef  = React.useRef(null);
+      const touchRef   = React.useRef(null);
       const [tweaks, setTweaksState] = React.useState(TWEAK_DEFAULTS);
       const [tweaksOpen, setTweaksOpen] = React.useState(false);
 
@@ -127,6 +128,28 @@
         window.parent.postMessage({ type: '__edit_mode_available' }, '*');
         return () => window.removeEventListener('message', handleMsg);
       }, []);
+
+      function handleTouchStart(e) {
+        // Don't track if touch started inside a horizontally-scrollable element
+        // (e.g. filter pill rows) — let those scroll normally
+        let el = e.target;
+        while (el && el !== e.currentTarget) {
+          if (el.scrollWidth > el.clientWidth + 2) { touchRef.current = null; return; }
+          el = el.parentElement;
+        }
+        touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+      function handleTouchEnd(e) {
+        if (!touchRef.current) return;
+        const dx = e.changedTouches[0].clientX - touchRef.current.x;
+        const dy = e.changedTouches[0].clientY - touchRef.current.y;
+        touchRef.current = null;
+        if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 2) return;
+        const ids  = TABS.map(t => t.id);
+        const cur  = ids.indexOf(tab);
+        const next = dx < 0 ? ids[cur + 1] : ids[cur - 1];
+        if (next) setTab(next);
+      }
 
       function setTweak(key, val) {
         const update = typeof key === 'object' ? key : { [key]: val };
@@ -166,7 +189,7 @@
           <div style={{ height: 'env(safe-area-inset-top, 0px)', flexShrink: 0 }} />
 
           {/* ── Content ── */}
-          <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+          <div ref={scrollRef} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
             {tab === 'home'      && <Home onNavigate={setTab} />}
             {tab === 'bookmarks' && <Bookmarks />}
             {tab === 'todos'     && <Todos />}
