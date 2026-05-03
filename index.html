@@ -64,6 +64,7 @@
   <div id="root"></div>
 
   <script src="utils.js"></script>
+  <script type="text/babel" src="toast.jsx"></script>
   <script type="text/babel" src="tweaks-panel.jsx"></script>
   <script type="text/babel" src="Bookmarks.jsx"></script>
   <script type="text/babel" src="Todos.jsx"></script>
@@ -207,6 +208,8 @@
               );
             })}
           </nav>
+
+          <Toaster />
 
           {/* ── Tweaks panel ── */}
           {tweaksOpen && (

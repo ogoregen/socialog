@@ -422,6 +422,7 @@ function Bookmarks() {
 
   function handleAdd(bm) {
     setItems(prev => [bm, ...prev]);
+    showToast('Bookmark saved');
   }
 
   function handleSave(bm) {
@@ -431,10 +432,12 @@ function Bookmarks() {
       return [bm, ...prev];
     });
     setModal(null);
+    showToast('Bookmark updated');
   }
 
   function handleDelete(id) {
     setItems(prev => prev.filter(b => b.id !== id));
+    showToast('Bookmark deleted');
   }
 
   const filtered = items.filter(b => {

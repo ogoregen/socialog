@@ -97,6 +97,7 @@ function Todos() {
     setInput('');
     setAddDue(null);
     inputRef.current?.focus();
+    showToast('Task added');
   }
 
   function toggleDone(id) {
@@ -113,10 +114,12 @@ function Todos() {
 
   function deleteItem(id) {
     setItems(prev => prev.filter(t => t.id !== id));
+    showToast('Task deleted');
   }
 
   function clearDone() {
     setItems(prev => prev.filter(t => !t.done));
+    showToast('Done tasks cleared');
   }
 
   const active = items.filter(t => !t.done);

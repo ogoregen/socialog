@@ -250,12 +250,15 @@ function Routines() {
   React.useEffect(() => { save('routines', items); }, [items]);
 
   function handleSave(r) {
+    let isNew;
     setItems(prev => {
       const idx = prev.findIndex(x => x.id === r.id);
-      if (idx >= 0) { const next = [...prev]; next[idx] = r; return next; }
+      isNew = idx < 0;
+      if (!isNew) { const next = [...prev]; next[idx] = r; return next; }
       return [r, ...prev];
     });
     setModal(null);
+    showToast(isNew ? 'Routine added' : 'Routine updated');
   }
 
   function handleToggleToday(id) {
@@ -269,7 +272,10 @@ function Routines() {
     }));
   }
 
-  function handleDelete(id) { setItems(prev => prev.filter(r => r.id !== id)); }
+  function handleDelete(id) {
+    setItems(prev => prev.filter(r => r.id !== id));
+    showToast('Routine deleted');
+  }
 
   const todayDayIdx = currentDayIndex();
   const thisMonday  = getMondayOf(new Date());
