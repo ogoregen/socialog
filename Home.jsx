@@ -5,6 +5,89 @@ const HOME_TYPE_ICONS = {
   place: '◈', recipe: '✦', product: '◇', event: '◉',
 };
 
+// ── Monthly habit streak grid ─────────────────────────────────────────────────
+function StreakGrid({ routines }) {
+  const now   = new Date();
+  const year  = now.getFullYear();
+  const month = now.getMonth();
+  const todayDate = now.getDate();
+
+  const daysInMonth    = new Date(year, month + 1, 0).getDate();
+  const firstDayOfWeek = new Date(year, month, 1).getDay();
+  const monthLabel     = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  // Compute current streak: consecutive past days (excl. days with no routines) with ≥1 done
+  let streak = 0;
+  for (let offset = 1; offset <= 365; offset++) {
+    const d = new Date(now); d.setDate(now.getDate() - offset);
+    const ds  = d.toISOString().slice(0, 10);
+    const dow = d.getDay();
+    const scheduled = routines.filter(r => r.days.includes(dow));
+    if (!scheduled.length) continue;
+    const completed = scheduled.filter(r => r.completions && r.completions[ds]).length;
+    if (completed > 0) streak++; else break;
+  }
+
+  function cellColor(day) {
+    if (!day) return 'transparent';
+    if (day > todayDate) return 'var(--border)';
+    const mm  = String(month + 1).padStart(2, '0');
+    const dd  = String(day).padStart(2, '0');
+    const ds  = `${year}-${mm}-${dd}`;
+    const dow = new Date(year, month, day).getDay();
+    const scheduled = routines.filter(r => r.days.includes(dow));
+    if (!scheduled.length) return 'var(--border)';
+    const ratio = scheduled.filter(r => r.completions && r.completions[ds]).length / scheduled.length;
+    if (ratio === 0)   return 'var(--border)';
+    if (ratio < 0.34)  return 'rgba(34,197,94,0.28)';
+    if (ratio < 0.67)  return 'rgba(34,197,94,0.55)';
+    if (ratio < 1)     return 'rgba(34,197,94,0.8)';
+    return '#22c55e';
+  }
+
+  const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  const cells = Array(firstDayOfWeek).fill(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  return (
+    <div style={{ marginBottom: 32 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--fg-muted)' }}>
+            Habits
+          </span>
+          {streak > 0 && (
+            <span style={{ fontSize: 12, fontWeight: 600, color: '#22c55e' }}>
+              {streak} day streak
+            </span>
+          )}
+        </div>
+        <span style={{ fontSize: 11, color: 'var(--fg-muted)' }}>{monthLabel}</span>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
+        {DAY_LABELS.map((l, i) => (
+          <div key={i} style={{ textAlign: 'center', fontSize: 9, fontWeight: 600, color: 'var(--fg-muted)', paddingBottom: 2, letterSpacing: '0.06em' }}>
+            {l}
+          </div>
+        ))}
+        {cells.map((day, i) => {
+          const isToday = day === todayDate;
+          return (
+            <div key={i} style={{
+              aspectRatio: '1',
+              borderRadius: 5,
+              background: cellColor(day),
+              boxShadow: isToday ? '0 0 0 2px var(--fg)' : 'none',
+            }} />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Main Home view ────────────────────────────────────────────────────────────
 function Home({ onNavigate }) {
   const todayKey = today();
   const todayIdx = currentDayIndex();
@@ -27,7 +110,7 @@ function Home({ onNavigate }) {
   const hasRoutines = todayRoutines.length > 0;
   const hasTasks    = overdue.length + dueToday.length + upcoming.length + completedToday.length > 0;
   const hasSaved    = savedToday.length > 0;
-  const isEmpty     = !hasRoutines && !hasTasks && !hasSaved;
+  const isEmpty     = !routines.length && !hasTasks && !hasSaved;
 
   const sectionHeaderStyle = {
     fontSize: 11, fontWeight: 600, letterSpacing: '0.08em',
@@ -54,7 +137,7 @@ function Home({ onNavigate }) {
     <div style={{ padding: '20px 20px 60px' }}>
 
       {/* Date */}
-      <div style={{ marginBottom: 32 }}>
+      <div style={{ marginBottom: 28 }}>
         <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em' }}>
           {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
         </div>
@@ -62,6 +145,9 @@ function Home({ onNavigate }) {
           {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
         </div>
       </div>
+
+      {/* Streak grid — always shown if user has any routines */}
+      {routines.length > 0 && <StreakGrid routines={routines} />}
 
       {/* Routines */}
       {hasRoutines && (
@@ -104,7 +190,6 @@ function Home({ onNavigate }) {
               : isUpcoming && diff === 1 ? 'Tomorrow'
               : isUpcoming ? new Date(t.dueDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
               : null;
-            const labelColor = isOverdue ? '#ef4444' : 'var(--fg-muted)';
             return (
               <div key={t.id} onClick={() => onNavigate('todos')} style={{ ...rowStyle, opacity: t.done ? 0.5 : 1 }}>
                 <div style={{
