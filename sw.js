@@ -1,4 +1,4 @@
-const CACHE = 'socialog-v1';
+const CACHE = 'socialog-v2';
 
 const LOCAL = [
   '/',

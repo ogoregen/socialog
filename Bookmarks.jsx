@@ -1,4 +1,4 @@
-// Bookmarks component — context-aware with smart URL inference + quick-paste
+// Bookmarks — archive-style with cover grid, ratings, and log dates
 
 const BOOKMARK_TYPES = {
   music:   { label: 'Music',   icon: '♪', fields: ['artist','genre','year'] },
@@ -16,19 +16,12 @@ const STATUS_COLORS  = { all: 'var(--fg)', 'want to try': '#3b82f6', 'in progres
 
 // ── URL type inference ────────────────────────────────────────────────────────
 const TYPE_RULES = [
-  // Music
   { pattern: /spotify\.com|music\.apple\.com|soundcloud\.com|bandcamp\.com|last\.fm|tidal\.com|deezer\.com/, type: 'music' },
-  // Movie / TV
   { pattern: /imdb\.com|letterboxd\.com|themoviedb\.org|netflix\.com|hulu\.com|hbo\.com|disneyplus\.com|trakt\.tv/, type: 'movie' },
-  // Book
   { pattern: /goodreads\.com|books\.google\.com|openlibrary\.org|audible\.com|librarything\.com/, type: 'book' },
-  // Place
   { pattern: /maps\.google\.com|maps\.app\.goo\.gl|share\.google|goo\.gl\/maps|yelp\.com|tripadvisor\.com|foursquare\.com|opentable\.com|maps\.apple\.com/, type: 'place' },
-  // Recipe
   { pattern: /allrecipes\.com|food\.com|seriouseats\.com|bonappetit\.com|epicurious\.com|cooking\.nytimes\.com|tasty\.co/, type: 'recipe' },
-  // Product
   { pattern: /amazon\.com|etsy\.com|shopify\.com|ebay\.com|bestbuy\.com|walmart\.com|shop\./, type: 'product' },
-  // YouTube — could be music or movie, default movie
   { pattern: /youtube\.com|youtu\.be|vimeo\.com/, type: 'movie' },
 ];
 
@@ -44,12 +37,7 @@ function inferType(url) {
 }
 
 function extractDomain(url) {
-  try {
-    const u = new URL(url);
-    return u.hostname.replace(/^www\./, '');
-  } catch (e) {
-    return url;
-  }
+  try { return new URL(url).hostname.replace(/^www\./, ''); } catch (e) { return url; }
 }
 
 function decodeHtmlEntities(str) {
@@ -66,29 +54,21 @@ function parseTitleFromHtml(html) {
   const ogImage = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"'<>]+)["']/i)
                || html.match(/<meta[^>]+content=["']([^"'<>]+)["'][^>]+property=["']og:image["']/i);
   const coverUrl = ogImage ? decodeHtmlEntities(ogImage[1].trim()) : '';
-
-  if (ogTitle) {
-    return { title: decodeHtmlEntities(ogTitle[1].trim()).slice(0, 150), coverUrl };
-  }
-
+  if (ogTitle) return { title: decodeHtmlEntities(ogTitle[1].trim()).slice(0, 150), coverUrl };
   const tMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
   if (tMatch) {
-    const title = decodeHtmlEntities(tMatch[1].trim())
-      .replace(/\s*[|\-–—·•]\s*.{2,60}$/, '')
-      .slice(0, 150);
+    const title = decodeHtmlEntities(tMatch[1].trim()).replace(/\s*[|\-–—·•]\s*.{2,60}$/, '').slice(0, 150);
     return { title, coverUrl };
   }
   return null;
 }
 
-// Cross-browser AbortSignal helper (AbortSignal.timeout not on iOS < 16)
 function abortAfter(ms) {
   const c = new AbortController();
   setTimeout(() => c.abort(), ms);
   return c.signal;
 }
 
-// Cross-browser Promise.any (not on Chrome < 85 / Samsung Internet < 12)
 function promiseAny(promises) {
   return new Promise((resolve, reject) => {
     let remaining = promises.length;
@@ -103,38 +83,21 @@ function promiseAny(promises) {
   });
 }
 
-// ── Smart title extraction from URL ──────────────────────────────────────────
 function extractSmartMeta(url) {
   try {
-    const u = new URL(url);
-    const host = u.hostname.replace(/^www\./, '');
-
-    if (/youtube\.com|youtu\.be/.test(host))
-      return { fetchUrl: `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`, parseOembed: true };
-
-    if (/spotify\.com/.test(host))
-      return { fetchUrl: `https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`, parseOembed: true };
-
-    if (/vimeo\.com/.test(host))
-      return { fetchUrl: `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(url)}`, parseOembed: true };
-
-    if (/soundcloud\.com/.test(host))
-      return { fetchUrl: `https://soundcloud.com/oembed?url=${encodeURIComponent(url)}&format=json`, parseOembed: true };
-
-    if (/reddit\.com/.test(host))
-      return { fetchUrl: `https://www.reddit.com/oembed?url=${encodeURIComponent(url)}`, parseOembed: true };
-
-    if (/tiktok\.com/.test(host))
-      return { fetchUrl: `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`, parseOembed: true };
-
+    const host = new URL(url).hostname.replace(/^www\./, '');
+    if (/youtube\.com|youtu\.be/.test(host))   return { fetchUrl: `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`, parseOembed: true };
+    if (/spotify\.com/.test(host))              return { fetchUrl: `https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`, parseOembed: true };
+    if (/vimeo\.com/.test(host))                return { fetchUrl: `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(url)}`, parseOembed: true };
+    if (/soundcloud\.com/.test(host))           return { fetchUrl: `https://soundcloud.com/oembed?url=${encodeURIComponent(url)}&format=json`, parseOembed: true };
+    if (/reddit\.com/.test(host))               return { fetchUrl: `https://www.reddit.com/oembed?url=${encodeURIComponent(url)}`, parseOembed: true };
+    if (/tiktok\.com/.test(host))               return { fetchUrl: `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`, parseOembed: true };
   } catch (e) {}
   return null;
 }
 
 async function fetchSmartTitle(url) {
   const smart = extractSmartMeta(url);
-
-  // Try oEmbed first (no proxy needed, CORS-friendly)
   if (smart && smart.parseOembed) {
     try {
       const res = await fetch(smart.fetchUrl, { signal: abortAfter(5000) });
@@ -144,42 +107,38 @@ async function fetchSmartTitle(url) {
       }
     } catch (e) {}
   }
-
-  // Try both proxies in parallel — resolve with whichever returns a usable title first
   const tryProxy = async (fetcher) => {
-    try {
-      const html = await fetcher();
-      if (!html) throw new Error('empty');
-      const parsed = parseTitleFromHtml(html);
-      if (!parsed?.title) throw new Error('no title');
-      return parsed;
-    } catch (e) { throw e; }
+    const html = await fetcher();
+    if (!html) throw new Error('empty');
+    const parsed = parseTitleFromHtml(html);
+    if (!parsed?.title) throw new Error('no title');
+    return parsed;
   };
-
   try {
     return await promiseAny([
-      tryProxy(async () => {
-        const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, { signal: abortAfter(5000) });
-        if (!r.ok) return null;
-        return (await r.json()).contents || null;
-      }),
-      tryProxy(async () => {
-        const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { signal: abortAfter(5000) });
-        if (!r.ok) return null;
-        return r.text();
-      }),
+      tryProxy(async () => { const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, { signal: abortAfter(5000) }); return r.ok ? (await r.json()).contents || null : null; }),
+      tryProxy(async () => { const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { signal: abortAfter(5000) }); return r.ok ? r.text() : null; }),
     ]);
   } catch (e) {}
-
   return null;
 }
 
 function emptyBookmark(type = 'article', url = '') {
   return {
     id: uid(), type, title: '', url, coverUrl: '',
-    tags: '', notes: '', status: 'want to try',
+    tags: '', notes: '', status: 'want to try', rating: 0,
     meta: {}, createdAt: new Date().toISOString(),
   };
+}
+
+function formatLogDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) return 'logged today';
+  const opts = { month: 'short', day: 'numeric' };
+  if (d.getFullYear() !== now.getFullYear()) opts.year = 'numeric';
+  return 'logged ' + d.toLocaleDateString('en-US', opts);
 }
 
 // ── Quick paste bar ───────────────────────────────────────────────────────────
@@ -187,26 +146,17 @@ function QuickAdd({ onPreview }) {
   const [url, setUrl]         = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const savingRef = React.useRef(false);
-  const inputRef  = React.useRef();
 
   async function doFetch(raw) {
     if (savingRef.current) return;
     const trimmed = raw.trim();
     if (!trimmed) return;
     const normalized = /^https?:\/\//i.test(trimmed) ? trimmed : 'https://' + trimmed;
-
     savingRef.current = true;
     setLoading(true);
-
-    const type   = inferType(normalized);
-    const domain = extractDomain(normalized);
-
-    const bm = emptyBookmark(type, normalized);
-    bm.title       = domain;
-    bm.meta.source = domain;
-
+    const bm = emptyBookmark(inferType(normalized), normalized);
+    bm.title = bm.meta.source = extractDomain(normalized);
     const fetchPromise = fetchSmartTitle(normalized);
-
     setLoading(false);
     savingRef.current = false;
     onPreview(bm, fetchPromise, () => setUrl(''));
@@ -220,33 +170,22 @@ function QuickAdd({ onPreview }) {
     }
   }
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    doFetch(url);
-  }
-
   return (
-    <form onSubmit={handleSubmit} style={{
+    <form onSubmit={e => { e.preventDefault(); doFetch(url); }} style={{
       display: 'flex', gap: 8, alignItems: 'center',
       background: 'var(--surface)', border: '1px solid var(--border)',
-      borderRadius: 14, padding: '10px 12px', marginBottom: 20,
+      borderRadius: 14, padding: '10px 12px', marginBottom: 16,
     }}>
-      <span style={{ color: 'var(--fg-muted)', fontSize: 14, flexShrink: 0, width: 16, textAlign: 'center', display: 'inline-block' }}>★</span>
+      <span style={{ color: 'var(--fg-muted)', fontSize: 14, flexShrink: 0 }}>★</span>
       <input
-        ref={inputRef}
-        value={url}
-        onChange={e => setUrl(e.target.value)}
-        onPaste={handlePaste}
+        value={url} onChange={e => setUrl(e.target.value)} onPaste={handlePaste}
         placeholder="Paste a link to save it…"
-        style={{
-          flex: 1, background: 'none', border: 'none', outline: 'none',
-          fontSize: 14, color: 'var(--fg)', fontFamily: 'inherit',
-        }}
+        style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: 14, color: 'var(--fg)', fontFamily: 'inherit' }}
       />
       <button type="submit" disabled={loading} style={{
         background: 'var(--fg)', color: 'var(--bg)', border: 'none',
-        borderRadius: 8, width: 30, height: 30, fontSize: loading ? 14 : 18, cursor: 'pointer',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        borderRadius: 8, width: 30, height: 30, fontSize: loading ? 14 : 18,
+        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
         opacity: loading ? 0.5 : 1,
       }}>{loading ? '…' : '+'}</button>
     </form>
@@ -255,9 +194,8 @@ function QuickAdd({ onPreview }) {
 
 // ── Edit modal ────────────────────────────────────────────────────────────────
 function BookmarkModal({ bm, isNew, fetchPromise, onSave, onClose }) {
-  const [form, setForm]       = React.useState(bm);
+  const [form, setForm]         = React.useState(bm);
   const [fetching, setFetching] = React.useState(!!fetchPromise);
-  const typeInfo = BOOKMARK_TYPES[form.type];
 
   React.useEffect(() => {
     if (!fetchPromise) return;
@@ -284,38 +222,29 @@ function BookmarkModal({ bm, isNew, fetchPromise, onSave, onClose }) {
   };
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 200,
-      display: 'flex', alignItems: 'flex-end',
-    }} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{
-        background: 'var(--bg)', borderRadius: '20px 20px 0 0', width: '100%',
-        maxHeight: '90vh', overflowY: 'auto', padding: '0 0 40px',
-      }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 200, display: 'flex', alignItems: 'flex-end' }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ background: 'var(--bg)', borderRadius: '20px 20px 0 0', width: '100%', maxHeight: '90vh', overflowY: 'auto', padding: '0 0 40px' }}>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 4px' }}>
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border)' }}></div>
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border)' }} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 16px' }}>
-          <span style={{ fontSize: 17, fontWeight: 600 }}>{isNew ? 'Add bookmark' : 'Edit bookmark'}</span>
+          <span style={{ fontSize: 17, fontWeight: 600 }}>{isNew ? 'Add to library' : 'Edit'}</span>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, color: 'var(--fg-muted)', cursor: 'pointer', lineHeight: 1, padding: 0 }}>×</button>
         </div>
 
         <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {/* Type picker */}
+          {/* Type */}
           <div>
             <span style={labelStyle}>Type</span>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {Object.entries(BOOKMARK_TYPES).map(([key, t]) => (
                 <button key={key} onClick={() => set('type', key)} style={{
-                  padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 500,
-                  cursor: 'pointer', border: '1px solid',
+                  padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 500, cursor: 'pointer', border: '1px solid',
                   background: form.type === key ? 'var(--fg)' : 'transparent',
                   color: form.type === key ? 'var(--bg)' : 'var(--fg)',
-                  borderColor: form.type === key ? 'var(--fg)' : 'var(--border)',
-                  transition: 'all 0.15s',
-                }}>
-                  {t.icon} {t.label}
-                </button>
+                  borderColor: form.type === key ? 'var(--fg)' : 'var(--border)', transition: 'all 0.15s',
+                }}>{t.icon} {t.label}</button>
               ))}
             </div>
           </div>
@@ -342,6 +271,7 @@ function BookmarkModal({ bm, isNew, fetchPromise, onSave, onClose }) {
             </div>
           ))}
 
+          {/* Status */}
           <div>
             <span style={labelStyle}>Status</span>
             <div style={{ display: 'flex', gap: 6 }}>
@@ -351,11 +281,21 @@ function BookmarkModal({ bm, isNew, fetchPromise, onSave, onClose }) {
                   cursor: 'pointer', border: '1px solid', flex: 1,
                   background: form.status === s ? STATUS_COLORS[s] : 'transparent',
                   color: form.status === s ? '#fff' : 'var(--fg)',
-                  borderColor: form.status === s ? STATUS_COLORS[s] : 'var(--border)',
-                  transition: 'all 0.15s',
-                }}>
-                  {STATUS_LABELS[s]}
-                </button>
+                  borderColor: form.status === s ? STATUS_COLORS[s] : 'var(--border)', transition: 'all 0.15s',
+                }}>{STATUS_LABELS[s]}</button>
+              ))}
+            </div>
+          </div>
+
+          {/* Rating */}
+          <div>
+            <span style={labelStyle}>Rating</span>
+            <div style={{ display: 'flex', gap: 2 }}>
+              {[1,2,3,4,5].map(n => (
+                <button key={n} onClick={() => set('rating', form.rating === n ? 0 : n)} style={{
+                  background: 'none', border: 'none', fontSize: 28, cursor: 'pointer', padding: '0 2px', lineHeight: 1,
+                  color: n <= (form.rating || 0) ? '#f59e0b' : 'var(--border)', transition: 'color 0.1s',
+                }}>★</button>
               ))}
             </div>
           </div>
@@ -373,64 +313,55 @@ function BookmarkModal({ bm, isNew, fetchPromise, onSave, onClose }) {
 
           <button onClick={() => onSave(form)} style={{
             width: '100%', padding: '14px', borderRadius: 12, background: 'var(--fg)',
-            color: 'var(--bg)', border: 'none', fontSize: 15, fontWeight: 600,
-            cursor: 'pointer', marginTop: 4,
-          }}>{isNew ? 'Save bookmark' : 'Save changes'}</button>
+            color: 'var(--bg)', border: 'none', fontSize: 15, fontWeight: 600, cursor: 'pointer', marginTop: 4,
+          }}>{isNew ? 'Add to library' : 'Save changes'}</button>
         </div>
       </div>
     </div>
   );
 }
 
-// ── Card (list only) ──────────────────────────────────────────────────────────
-function BookmarkCard({ bm, onEdit, onDelete }) {
+// ── Grid card ─────────────────────────────────────────────────────────────────
+function GridCard({ bm, onEdit, onDelete }) {
   const typeInfo = BOOKMARK_TYPES[bm.type] || BOOKMARK_TYPES.article;
+  const isDone   = bm.status === 'done';
+  const subtitle = bm.meta?.artist || bm.meta?.author || bm.meta?.director || bm.meta?.source || typeInfo.label;
 
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: 14,
-      padding: '16px 0', borderBottom: '1px solid var(--border)',
-    }}>
-      {/* Icon or tiny cover */}
-      <div style={{
-        width: 40, height: 40, borderRadius: 8, flexShrink: 0, overflow: 'hidden',
-        background: 'var(--surface)', border: '1px solid var(--border)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 18, color: 'var(--fg-muted)',
-      }}>
+    <div>
+      {/* Cover */}
+      <div style={{ position: 'relative', paddingTop: '150%', borderRadius: 10, overflow: 'hidden', background: 'var(--surface)', border: '1px solid var(--border)', marginBottom: 8 }}>
         {bm.coverUrl
-          ? <img src={bm.coverUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          : typeInfo.icon}
-      </div>
-
-      <div style={{ flex: 1, minWidth: 0 }}>
-        {bm.url ? (
-          <a href={bm.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--fg)', textDecoration: 'none' }}>
-            <div style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {bm.title || '(untitled)'}
-            </div>
-          </a>
-        ) : (
-          <div style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {bm.title || '(untitled)'}
-          </div>
-        )}
-        <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 2 }}>
-          {typeInfo.label} · {bm.meta?.source || bm.meta?.artist || bm.meta?.author || formatDate(bm.createdAt)}
+          ? <img src={bm.coverUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+          : <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, opacity: 0.2 }}>{typeInfo.icon}</div>
+        }
+        {/* Status badge */}
+        <div style={{ position: 'absolute', top: 8, left: 8 }}>
+          <span style={{ background: STATUS_COLORS[bm.status], color: '#fff', fontSize: 9, fontWeight: 700, borderRadius: 8, padding: '3px 7px' }}>
+            {STATUS_LABELS[bm.status]}
+          </span>
+        </div>
+        {/* Actions */}
+        <div style={{ position: 'absolute', top: 6, right: 6, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <button onClick={() => onEdit(bm)} style={{ background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: 6, fontSize: 11, color: '#fff', cursor: 'pointer', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
+          <button onClick={() => onDelete(bm.id)} style={{ background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: 6, fontSize: 14, color: '#fff', cursor: 'pointer', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
         </div>
       </div>
 
-      <span style={{
-        fontSize: 10, padding: '2px 7px', borderRadius: 20, flexShrink: 0,
-        background: STATUS_COLORS[bm.status], color: '#fff',
-        fontWeight: 600,
-      }}>
-        {STATUS_LABELS[bm.status]}
-      </span>
-
-      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-        <button onClick={() => onEdit(bm)} style={{ background: 'var(--border)', border: 'none', borderRadius: 8, fontSize: 11, color: 'var(--fg-muted)', cursor: 'pointer', width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
-        <button onClick={() => onDelete(bm.id)} style={{ background: 'var(--border)', border: 'none', borderRadius: 8, fontSize: 14, color: 'var(--fg-muted)', cursor: 'pointer', width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+      {/* Info */}
+      {bm.url
+        ? <a href={bm.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--fg)', textDecoration: 'none' }}>
+            <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.3, marginBottom: 3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{bm.title || '(untitled)'}</div>
+          </a>
+        : <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.3, marginBottom: 3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{bm.title || '(untitled)'}</div>
+      }
+      {bm.rating > 0 && (
+        <div style={{ fontSize: 12, color: '#f59e0b', marginBottom: 2, letterSpacing: '-0.5px' }}>
+          {'★'.repeat(bm.rating)}{'☆'.repeat(5 - bm.rating)}
+        </div>
+      )}
+      <div style={{ fontSize: 11, color: 'var(--fg-muted)' }}>
+        {isDone && bm.doneAt ? formatLogDate(bm.doneAt) : subtitle}
       </div>
     </div>
   );
@@ -438,20 +369,10 @@ function BookmarkCard({ bm, onEdit, onDelete }) {
 
 // ── Main Bookmarks view ───────────────────────────────────────────────────────
 function Bookmarks() {
-  const [items, setItems]       = React.useState(() => load('bookmarks') || []);
-  const [modal, setModal]       = React.useState(null);
+  const [items, setItems]           = React.useState(() => load('bookmarks') || []);
+  const [modal, setModal]           = React.useState(null);
   const [filter, setFilter]         = React.useState('all');
   const [typeFilter, setTypeFilter] = React.useState('all');
-
-
-  // Listen for new event from header + button
-  React.useEffect(() => {
-    function handler(e) {
-      if (e.detail === 'bookmarks') setModal(emptyBookmark());
-    }
-    window.addEventListener('socialog:new', handler);
-    return () => window.removeEventListener('socialog:new', handler);
-  }, []);
 
   React.useEffect(() => { save('bookmarks', items); }, [items]);
 
@@ -461,22 +382,29 @@ function Bookmarks() {
   }
 
   function handleSave(bm) {
-    let isNew;
+    const existing = items.find(b => b.id === bm.id);
+    const wasNew   = !existing;
+    // Track when an item first becomes "done"
+    let updated = { ...bm };
+    if (bm.status === 'done' && (!existing || existing.status !== 'done')) {
+      updated.doneAt = updated.doneAt || new Date().toISOString();
+    } else if (bm.status !== 'done') {
+      updated.doneAt = null;
+    }
     setItems(prev => {
-      const idx = prev.findIndex(b => b.id === bm.id);
-      isNew = idx < 0;
-      if (!isNew) { const next = [...prev]; next[idx] = bm; return next; }
-      return [bm, ...prev];
+      const idx = prev.findIndex(b => b.id === updated.id);
+      if (idx < 0) return [updated, ...prev];
+      const next = [...prev]; next[idx] = updated; return next;
     });
     closeModal();
-    showToast(isNew ? 'Bookmark saved' : 'Bookmark updated');
+    showToast(wasNew ? 'Added to library' : 'Updated');
   }
 
   function handleDelete(id) {
     const idx     = items.findIndex(b => b.id === id);
     const deleted = items[idx];
     setItems(prev => prev.filter(b => b.id !== id));
-    showToast('Bookmark deleted', 4000, {
+    showToast('Removed', 4000, {
       label: 'Undo',
       fn: () => setItems(prev => { const next = [...prev]; next.splice(Math.min(idx, next.length), 0, deleted); return next; }),
     });
@@ -488,13 +416,26 @@ function Bookmarks() {
     return true;
   });
 
+  const want  = items.filter(b => b.status === 'want to try').length;
+  const doing = items.filter(b => b.status === 'in progress').length;
+  const done  = items.filter(b => b.status === 'done').length;
+
   const modalBm = modal ? (modal.bm != null ? modal.bm : modal) : null;
 
   return (
-    <div style={{ padding: '20px 20px 60px' }}>
+    <div style={{ padding: '16px 16px 80px' }}>
       <QuickAdd onPreview={(bm, fetchPromise, clearFn) => setModal({ bm, fetchPromise, clearFn })} />
 
-      {/* Type filter pills */}
+      {/* Stats */}
+      {items.length > 0 && (
+        <div style={{ display: 'flex', gap: 16, marginBottom: 16, fontSize: 12 }}>
+          <span><strong style={{ color: STATUS_COLORS['want to try'] }}>{want}</strong> <span style={{ color: 'var(--fg-muted)' }}>want</span></span>
+          <span><strong style={{ color: STATUS_COLORS['in progress'] }}>{doing}</strong> <span style={{ color: 'var(--fg-muted)' }}>doing</span></span>
+          <span><strong style={{ color: STATUS_COLORS['done'] }}>{done}</strong> <span style={{ color: 'var(--fg-muted)' }}>done</span></span>
+        </div>
+      )}
+
+      {/* Type filter */}
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 8 }}>
         {[['all','All'], ...Object.entries(BOOKMARK_TYPES).map(([k,t]) => [k, t.label])].map(([key, label]) => (
           <button key={key} onClick={() => setTypeFilter(key)} style={{
@@ -502,42 +443,39 @@ function Bookmarks() {
             cursor: 'pointer', border: '1px solid', whiteSpace: 'nowrap', flexShrink: 0,
             background: typeFilter === key ? 'var(--fg)' : 'transparent',
             color: typeFilter === key ? 'var(--bg)' : 'var(--fg-muted)',
-            borderColor: typeFilter === key ? 'var(--fg)' : 'var(--border)',
-            transition: 'all 0.15s',
-          }}>
-            {label}
-          </button>
+            borderColor: typeFilter === key ? 'var(--fg)' : 'var(--border)', transition: 'all 0.15s',
+          }}>{label}</button>
         ))}
       </div>
 
       {/* Status filter */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
+      <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
         {[['all','All'], ['want to try','Want'], ['in progress','Doing'], ['done','Done']].map(([key, label]) => {
           const active = filter === key;
           const cc = STATUS_COLORS[key];
           return (
-          <button key={key} onClick={() => setFilter(key)} style={{
-            padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500,
-            cursor: 'pointer', border: '1px solid',
-            background: active ? cc : 'transparent',
-            color: active ? '#fff' : 'var(--fg-muted)',
-            borderColor: active ? cc : 'var(--border)',
-            transition: 'all 0.15s',
-          }}>{label}</button>
-        );})}
+            <button key={key} onClick={() => setFilter(key)} style={{
+              padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500,
+              cursor: 'pointer', border: '1px solid',
+              background: active ? cc : 'transparent',
+              color: active ? '#fff' : 'var(--fg-muted)',
+              borderColor: active ? cc : 'var(--border)', transition: 'all 0.15s',
+            }}>{label}</button>
+          );
+        })}
       </div>
 
-      {/* Cards */}
-      <div>
+      {/* Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px 12px' }}>
         {filtered.map(bm => (
-          <BookmarkCard key={bm.id} bm={bm} onEdit={b => setModal(b)} onDelete={handleDelete} />
+          <GridCard key={bm.id} bm={bm} onEdit={b => setModal(b)} onDelete={handleDelete} />
         ))}
       </div>
 
       {filtered.length === 0 && (
         <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--fg-muted)' }}>
           <div style={{ fontSize: 32, marginBottom: 16, opacity: 0.2 }}>★</div>
-          <div style={{ fontSize: 13, opacity: 0.5 }}>Paste a link to save it</div>
+          <div style={{ fontSize: 13, opacity: 0.5 }}>{items.length ? 'Nothing matches' : 'Paste a link to save it'}</div>
         </div>
       )}
 
