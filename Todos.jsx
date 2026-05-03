@@ -1,12 +1,5 @@
 // Todos component — simple, clean checklist
 
-const BUILT_IN_CATEGORIES = [
-  { id: 'work',     label: 'Work',     color: '#3b82f6' },
-  { id: 'personal', label: 'Personal', color: '#a855f7' },
-  { id: 'health',   label: 'Health',   color: '#22c55e' },
-  { id: 'finance',  label: 'Finance',  color: '#f59e0b' },
-  { id: 'other',    label: 'Other',    color: '#ec4899' },
-];
 
 const CAT_PALETTE = ['#ef4444','#f97316','#eab308','#22c55e','#06b6d4','#3b82f6','#8b5cf6','#ec4899','#14b8a6','#f43f5e'];
 
@@ -76,7 +69,7 @@ function Todos() {
   const inputRef = React.useRef();
   const newCatRef = React.useRef();
 
-  const allCats = React.useMemo(() => [...BUILT_IN_CATEGORIES, ...customCats], [customCats]);
+  const allCats = customCats;
 
   React.useEffect(() => { save('todos', items); }, [items]);
   React.useEffect(() => { save('categories', customCats); }, [customCats]);
