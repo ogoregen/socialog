@@ -3,6 +3,12 @@
 
 const CAT_PALETTE = ['#ef4444','#f97316','#eab308','#22c55e','#06b6d4','#3b82f6','#8b5cf6','#ec4899','#14b8a6','#f43f5e'];
 
+const DEFAULT_CATS = [
+  { id: 'work',     label: 'Work',     color: '#3b82f6', custom: true },
+  { id: 'personal', label: 'Personal', color: '#a855f7', custom: true },
+  { id: 'health',   label: 'Health',   color: '#22c55e', custom: true },
+];
+
 function catColor(id, cats) {
   return cats.find(c => c.id === id)?.color ?? null;
 }
@@ -58,7 +64,7 @@ function getBucket(iso) {
 
 function Todos() {
   const [items, setItems]           = React.useState(() => load('todos') || []);
-  const [customCats, setCustomCats] = React.useState(() => load('categories') || []);
+  const [customCats, setCustomCats] = React.useState(() => load('categories') || DEFAULT_CATS);
   const [input, setInput]           = React.useState('');
   const [addCat, setAddCat]         = React.useState(null);
   const [addDue, setAddDue]         = React.useState(null);
