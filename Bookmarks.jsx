@@ -437,20 +437,20 @@ function GridCard({ bm, onEdit, onDelete }) {
             <img src={bm.coverUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
         )}
+        <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <span style={{ background: STATUS_COLORS[bm.status], color: '#fff', fontSize: 9, fontWeight: 700, borderRadius: 8, padding: '3px 7px' }}>
+            {STATUS_LABELS[bm.status]}
+          </span>
+          <span style={{ background: 'rgba(0,0,0,0.45)', color: '#fff', fontSize: 9, fontWeight: 600, borderRadius: 8, padding: '3px 7px' }}>
+            {typeInfo.label}
+          </span>
+        </div>
         <div style={{ padding: '10px 10px 8px' }}>
           {!bm.coverUrl && <div style={{ fontSize: 22, opacity: 0.2, marginBottom: 6, lineHeight: 1 }}>{typeInfo.icon}</div>}
           {bm.url
             ? <a href={bm.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--fg)', textDecoration: 'none' }}>{titleEl}</a>
             : titleEl}
           {bm.rating > 0 && <div style={{ fontSize: 11, color: '#f59e0b', marginBottom: 4, letterSpacing: '-0.5px' }}>{'★'.repeat(bm.rating)}</div>}
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 20, border: '1px solid var(--border)', color: 'var(--fg-muted)', fontWeight: 600 }}>
-              {typeInfo.icon} {typeInfo.label}
-            </span>
-            <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 20, background: STATUS_COLORS[bm.status], color: '#fff', fontWeight: 700 }}>
-              {STATUS_LABELS[bm.status]}
-            </span>
-          </div>
         </div>
         <div style={{ position: 'absolute', top: 6, right: 6, display: 'flex', gap: 3 }}>
           <button onClick={() => onEdit(bm)} style={{ background: 'rgba(0,0,0,0.12)', border: 'none', borderRadius: 6, fontSize: 10, color: 'var(--fg-muted)', cursor: 'pointer', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
@@ -500,9 +500,7 @@ function GridCard({ bm, onEdit, onDelete }) {
             {'★'.repeat(bm.rating)}{'☆'.repeat(5 - bm.rating)}
           </div>
         )}
-        <div style={{ fontSize: 11, color: 'var(--fg-muted)' }}>
-          {isDone && bm.doneAt ? formatLogDate(bm.doneAt) : subtitle}
-        </div>
+        {subtitle && <div style={{ fontSize: 11, color: 'var(--fg-muted)' }}>{subtitle}</div>}
       </div>
     </div>
   );
