@@ -450,7 +450,8 @@ function GridCard({ bm, onEdit, onDelete }) {
           {bm.url
             ? <a href={bm.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--fg)', textDecoration: 'none' }}>{titleEl}</a>
             : titleEl}
-          {bm.rating > 0 && <div style={{ fontSize: 11, color: '#f59e0b', marginBottom: 4, letterSpacing: '-0.5px' }}>{'★'.repeat(bm.rating)}</div>}
+          {bm.rating > 0 && <div style={{ fontSize: 11, color: '#f59e0b', marginBottom: 2, letterSpacing: '-0.5px' }}>{'★'.repeat(bm.rating)}</div>}
+          {subtitle && <div style={{ fontSize: 11, color: 'var(--fg-muted)' }}>{subtitle}</div>}
         </div>
         <div style={{ position: 'absolute', top: 6, right: 6, display: 'flex', gap: 3 }}>
           <button onClick={() => onEdit(bm)} style={{ background: 'rgba(0,0,0,0.12)', border: 'none', borderRadius: 6, fontSize: 10, color: 'var(--fg-muted)', cursor: 'pointer', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
