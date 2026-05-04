@@ -84,6 +84,7 @@
   <div id="root"></div>
 
   <script src="utils.js"></script>
+  <script src="notifications.js"></script>
   <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
   <script type="text/babel" src="toast.jsx"></script>
   <script type="text/babel" src="bottom-sheet.jsx"></script>
@@ -202,6 +203,14 @@
       React.useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
       }, [theme]);
+
+      // Schedule notifications on open and whenever app comes back to foreground
+      React.useEffect(() => {
+        scheduleNotifications();
+        function onVisible() { if (document.visibilityState === 'visible') scheduleNotifications(); }
+        document.addEventListener('visibilitychange', onVisible);
+        return () => document.removeEventListener('visibilitychange', onVisible);
+      }, []);
 
       function setTheme(v) { setThemeState(v); localStorage.setItem('socialog_theme', v); }
 

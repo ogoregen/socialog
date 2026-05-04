@@ -1,4 +1,4 @@
-const CACHE = 'socialog-v10';
+const CACHE = 'socialog-v11';
 
 // Relative paths resolve correctly whether the app is at the root or a subpath
 // (e.g. GitHub Pages at /socialog/). Absolute paths like '/index.html' would
@@ -10,6 +10,7 @@ const LOCAL = [
   './toast.jsx',
   './bottom-sheet.jsx',
   './tweaks-panel.jsx',
+  './notifications.js',
   './Notes.jsx',
   './Bookmarks.jsx',
   './Todos.jsx',
@@ -47,6 +48,25 @@ self.addEventListener('activate', e => {
       .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
+});
+
+// Notification scheduling: app sends a list of {delay, title, body, tag}
+// and we fire them via setTimeout. Timers are replaced on each message.
+const __notifTimers = [];
+self.addEventListener('message', e => {
+  if (e.data?.type !== 'SCHEDULE_NOTIFICATIONS') return;
+  __notifTimers.forEach(clearTimeout);
+  __notifTimers.length = 0;
+  for (const { delay, title, body, tag } of (e.data.notifications || [])) {
+    __notifTimers.push(setTimeout(() => {
+      self.registration.showNotification(title, {
+        body,
+        icon: './icons/icon-192.png',
+        badge: './icons/icon-192.png',
+        tag,
+      });
+    }, delay));
+  }
 });
 
 self.addEventListener('fetch', e => {
