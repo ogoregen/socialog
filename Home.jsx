@@ -84,39 +84,9 @@ function StreakGrid({ routines }) {
 }
 
 // ── Main Home view ────────────────────────────────────────────────────────────
-const INTENTION_PLACEHOLDERS = [
-  'What will make today meaningful?',
-  'What deserves your full attention?',
-  'Who do you want to be today?',
-  'What do you want to feel by tonight?',
-  'What are you grateful for right now?',
-  'What will you let go of today?',
-  'One thing that matters most…',
-  'What would make today great?',
-];
-
 function Home({ onNavigate, onOpenDrawer }) {
   const todayKey = today();
   const todayIdx = currentDayIndex();
-
-  const placeholder = React.useRef(
-    INTENTION_PLACEHOLDERS[Math.floor(Math.random() * INTENTION_PLACEHOLDERS.length)]
-  ).current;
-
-  const [intention, setIntention] = React.useState(() => {
-    try {
-      const raw = localStorage.getItem('socialog_intention');
-      if (!raw) return '';
-      const saved = JSON.parse(raw);
-      return saved.date === todayKey ? saved.text : '';
-    } catch { return ''; }
-  });
-
-  function handleIntention(e) {
-    const text = e.target.value;
-    setIntention(text);
-    localStorage.setItem('socialog_intention', JSON.stringify({ date: todayKey, text }));
-  }
 
   const todos     = load('todos')     || [];
   const bookmarks = load('bookmarks') || [];
@@ -176,29 +146,6 @@ function Home({ onNavigate, onOpenDrawer }) {
             {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
           </div>
         </div>
-      </div>
-
-      {/* Daily intention */}
-      <div style={{ borderLeft: '3px solid #f59e0b', paddingLeft: 14, marginBottom: 28 }}>
-        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#f59e0b', marginBottom: 6 }}>
-          Daily Intention
-        </div>
-        <input
-          type="text"
-          value={intention}
-          onChange={handleIntention}
-          placeholder={placeholder}
-          maxLength={120}
-          style={{
-            display: 'block', width: '100%', boxSizing: 'border-box',
-            background: 'none', border: 'none', outline: 'none',
-            padding: 0,
-            fontSize: 17, fontFamily: 'inherit',
-            fontWeight: 500,
-            color: 'var(--fg)',
-            letterSpacing: '-0.01em',
-          }}
-        />
       </div>
 
       {/* Streak grid — always shown if user has any routines */}
