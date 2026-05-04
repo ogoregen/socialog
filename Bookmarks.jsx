@@ -77,7 +77,6 @@ function extractSmartMeta(url) {
     if (/vimeo\.com/.test(host))                return { fetchUrl: `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(url)}`, parseOembed: true };
     if (/soundcloud\.com/.test(host))           return { fetchUrl: `https://soundcloud.com/oembed?url=${encodeURIComponent(url)}&format=json`, parseOembed: true };
     if (/reddit\.com/.test(host))               return { fetchUrl: `https://www.reddit.com/oembed?url=${encodeURIComponent(url)}`, parseOembed: true };
-    if (/tiktok\.com/.test(host))               return { fetchUrl: `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`, parseOembed: true };
   } catch (e) {}
   return null;
 }
