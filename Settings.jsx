@@ -1,22 +1,5 @@
 function SettingsPage({ theme, onThemeChange, onBack }) {
   const panelRef = React.useRef(null);
-  const [notifPerm, setNotifPerm] = React.useState(
-    () => ('Notification' in window ? Notification.permission : 'unsupported')
-  );
-  const [prefs, setPrefs] = React.useState(() => getNotifPrefs());
-
-  async function requestPermission() {
-    const p = await Notification.requestPermission();
-    setNotifPerm(p);
-    if (p === 'granted') scheduleNotifications();
-  }
-
-  function updatePref(key, value) {
-    const next = { ...prefs, [key]: value };
-    setPrefs(next);
-    saveNotifPrefs(next);
-    scheduleNotifications();
-  }
 
   React.useLayoutEffect(() => {
     const p = panelRef.current;
@@ -76,39 +59,7 @@ function SettingsPage({ theme, onThemeChange, onBack }) {
 
       <div style={{ padding: '0 20px 80px' }}>
 
-        <div style={sectionLabel}>Notifications</div>
-        {notifPerm === 'unsupported' && (
-          <div style={{ fontSize: 13, color: 'var(--fg-muted)' }}>Not supported in this browser.</div>
-        )}
-        {notifPerm === 'denied' && (
-          <div style={{ fontSize: 13, color: 'var(--fg-muted)' }}>Notifications blocked. Enable them in browser settings.</div>
-        )}
-        {notifPerm === 'default' && (
-          <button onClick={requestPermission} style={{
-            width: '100%', padding: '11px', borderRadius: 10, fontSize: 14, fontWeight: 500,
-            background: 'var(--fg)', color: 'var(--bg)', border: 'none', cursor: 'pointer',
-          }}>Enable notifications</button>
-        )}
-        {notifPerm === 'granted' && (
-          <>
-            {[
-              { key: 'taskTime',    label: 'Task reminder',    default: '09:00' },
-              { key: 'routineTime', label: 'Routine reminder', default: '20:00' },
-            ].map(({ key, label, default: def }) => (
-              <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '13px 0', borderBottom: '1px solid var(--border)' }}>
-                <span style={{ fontSize: 14 }}>{label}</span>
-                <input type="time" value={prefs[key] || def}
-                  onChange={e => updatePref(key, e.target.value)}
-                  style={{ background: 'none', border: 'none', outline: 'none', color: 'var(--fg)', fontSize: 14, fontFamily: 'inherit', cursor: 'pointer' }} />
-              </div>
-            ))}
-            <div style={{ fontSize: 12, color: 'var(--fg-muted)', marginTop: 10 }}>
-              Weekly streaks at risk are reminded at the routine time on Thu–Sun.
-            </div>
-          </>
-        )}
-
-        <div style={{ ...sectionLabel, marginTop: 28 }}>Appearance</div>
+        <div style={sectionLabel}>Appearance</div>
         <div style={{
           display: 'flex', gap: 4, padding: 4,
           background: 'var(--surface)', borderRadius: 10,
