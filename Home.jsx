@@ -88,6 +88,21 @@ function Home({ onNavigate, onOpenDrawer }) {
   const todayKey = today();
   const todayIdx = currentDayIndex();
 
+  const [intention, setIntention] = React.useState(() => {
+    try {
+      const raw = localStorage.getItem('socialog_intention');
+      if (!raw) return '';
+      const saved = JSON.parse(raw);
+      return saved.date === todayKey ? saved.text : '';
+    } catch { return ''; }
+  });
+
+  function handleIntention(e) {
+    const text = e.target.value;
+    setIntention(text);
+    localStorage.setItem('socialog_intention', JSON.stringify({ date: todayKey, text }));
+  }
+
   const todos     = load('todos')     || [];
   const bookmarks = load('bookmarks') || [];
   const routines  = load('routines')  || [];
@@ -147,6 +162,26 @@ function Home({ onNavigate, onOpenDrawer }) {
           </div>
         </div>
       </div>
+
+      {/* Daily intention */}
+      <input
+        type="text"
+        value={intention}
+        onChange={handleIntention}
+        placeholder="What matters today?"
+        maxLength={120}
+        style={{
+          display: 'block', width: '100%', boxSizing: 'border-box',
+          background: 'none', border: 'none', outline: 'none',
+          borderBottom: intention ? '1px solid var(--border)' : '1px dashed var(--border)',
+          padding: '4px 0 10px',
+          fontSize: 17, fontFamily: 'inherit',
+          fontWeight: intention ? 500 : 400,
+          color: intention ? 'var(--fg)' : 'var(--fg-muted)',
+          letterSpacing: '-0.01em',
+          marginBottom: 28,
+        }}
+      />
 
       {/* Streak grid — always shown if user has any routines */}
       {routines.length > 0 && <StreakGrid routines={routines} />}
