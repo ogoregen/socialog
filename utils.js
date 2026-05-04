@@ -2,10 +2,11 @@
 
 const STORAGE_KEYS = {
   bookmarks: 'socialog_bookmarks',
-  todos: 'socialog_todos',
-  routines: 'socialog_routines',
-  notes: 'socialog_notes',
-  settings: 'socialog_settings',
+  todos:     'socialog_todos',
+  routines:  'socialog_routines',
+  notes:     'socialog_notes',
+  settings:  'socialog_settings',
+  profile:   'socialog_profile',
 };
 
 function load(key) {

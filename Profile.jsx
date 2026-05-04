@@ -1,7 +1,7 @@
 function ProfilePage({ onBack }) {
   const panelRef  = React.useRef(null);
   const importRef = React.useRef(null);
-  const [name, setName] = React.useState(() => (load('profile') || {}).name || '');
+  const nameRef = React.useRef(null);
 
   React.useLayoutEffect(() => {
     const p = panelRef.current;
@@ -25,8 +25,9 @@ function ProfilePage({ onBack }) {
     p.addEventListener('transitionend', onEnd);
   }
 
-  function saveName(val) {
-    save('profile', { ...(load('profile') || {}), name: val.trim() });
+  function saveName() {
+    const val = nameRef.current?.value.trim() || '';
+    save('profile', { ...(load('profile') || {}), name: val });
   }
 
   // ── Data ──────────────────────────────────────────────────────────────────
@@ -153,9 +154,9 @@ function ProfilePage({ onBack }) {
         {/* Name */}
         <div style={{ marginTop: 24, marginBottom: 4 }}>
           <input
-            value={name}
-            onChange={e => setName(e.target.value)}
-            onBlur={e => saveName(e.target.value)}
+            ref={nameRef}
+            defaultValue={(load('profile') || {}).name || ''}
+            onBlur={saveName}
             onKeyDown={e => e.key === 'Enter' && e.target.blur()}
             placeholder="Your name"
             style={{
