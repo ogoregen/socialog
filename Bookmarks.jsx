@@ -16,7 +16,7 @@ const STATUS_COLORS  = { all: 'var(--fg)', 'want to try': '#3b82f6', 'in progres
 
 // ── URL type inference ────────────────────────────────────────────────────────
 const TYPE_RULES = [
-  { pattern: /spotify\.com|music\.apple\.com|soundcloud\.com|bandcamp\.com|last\.fm|tidal\.com|deezer\.com/, type: 'music' },
+  { pattern: /spotify\.com|music\.apple\.com|soundcloud\.com|bandcamp\.com|last\.fm|tidal\.com|deezer\.com|discogs\.com/, type: 'music' },
   { pattern: /imdb\.com|letterboxd\.com|themoviedb\.org|netflix\.com|hulu\.com|hbo\.com|disneyplus\.com|trakt\.tv/, type: 'movie' },
   { pattern: /goodreads\.com|books\.google\.com|openlibrary\.org|audible\.com|librarything\.com/, type: 'book' },
   { pattern: /maps\.google\.com|maps\.app\.goo\.gl|share\.google|goo\.gl\/maps|yelp\.com|tripadvisor\.com|foursquare\.com|opentable\.com|maps\.apple\.com/, type: 'place' },
@@ -140,6 +140,46 @@ async function fetchSmartTitle(url) {
             const largest = images.reduce((a, b) => (b.maxHeight > a.maxHeight ? b : a), { maxHeight: 0, url: '' });
             return { title: entity.name, coverUrl: largest.url || '', ...(artist && { meta: { artist } }) };
           }
+        }
+      }
+    } catch (e) {}
+  }
+
+  // Discogs: JSON-LD has MusicAlbum/MusicRecording with byArtist; og:title falls back as "Artist - Title"
+  if (/discogs\.com/.test(url)) {
+    try {
+      const res = await fetch(`https://r.jina.ai/${url}`, {
+        headers: { 'X-Return-Format': 'html' },
+        signal: abortAfter(12000),
+      });
+      if (res.ok) {
+        const html = await res.text();
+        const ldMatch = html.match(/<script type="application\/ld\+json"[^>]*>([^<]+)<\/script>/i);
+        if (ldMatch) {
+          try {
+            const ld = JSON.parse(ldMatch[1]);
+            const items = Array.isArray(ld) ? ld : [ld];
+            const music = items.find(x => x['@type'] && /Music/.test(x['@type']));
+            if (music?.name) {
+              const artist = music.byArtist?.name || (Array.isArray(music.byArtist) ? music.byArtist[0]?.name : '') || '';
+              const coverUrl = (typeof music.image === 'string' ? music.image : music.image?.[0] || '').replace('http:', 'https:');
+              return { title: music.name, coverUrl, ...(artist && { meta: { artist } }) };
+            }
+          } catch (e) {}
+        }
+        // Fall back: og:title is typically "Artist - Title (format)" for releases
+        const ogTitle = html.match(/<meta[^>]+property="og:title"[^>]+content="([^"]+)"/i)?.[1]
+                     || html.match(/<meta[^>]+content="([^"]+)"[^>]+property="og:title"/i)?.[1];
+        const ogImage = html.match(/<meta[^>]+property="og:image"[^>]+content="([^"]+)"/i)?.[1]
+                     || html.match(/<meta[^>]+content="([^"]+)"[^>]+property="og:image"/i)?.[1];
+        if (ogTitle) {
+          const dashIdx = ogTitle.indexOf(' - ');
+          if (dashIdx > 0) {
+            const artist = ogTitle.slice(0, dashIdx).trim();
+            const rest   = ogTitle.slice(dashIdx + 3).replace(/\s*\([^)]*\)\s*$/, '').trim();
+            return { title: rest || ogTitle, coverUrl: ogImage || '', meta: { artist } };
+          }
+          return { title: ogTitle, coverUrl: ogImage || '' };
         }
       }
     } catch (e) {}
