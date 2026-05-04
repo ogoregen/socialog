@@ -107,6 +107,36 @@ async function fetchSmartTitle(url) {
     return null;
   }
 
+  // Letterboxd: JSON-LD has Movie type with name + image (poster)
+  if (/letterboxd\.com/.test(url)) {
+    try {
+      const res = await fetch(`https://r.jina.ai/${url}`, {
+        headers: { 'X-Return-Format': 'html' },
+        signal: abortAfter(12000),
+      });
+      if (res.ok) {
+        const html = await res.text();
+        const ldBlocks = [...html.matchAll(/<script type="application\/ld\+json"[^>]*>([^<]+)<\/script>/gi)];
+        for (const block of ldBlocks) {
+          try {
+            const ld = JSON.parse(block[1]);
+            const items = Array.isArray(ld) ? ld : [ld];
+            const movie = items.find(x => x['@type'] === 'Movie' && x.name);
+            if (movie) {
+              const coverUrl = (typeof movie.image === 'string' ? movie.image : movie.image?.url || '').replace('http:', 'https:');
+              const director = Array.isArray(movie.director) ? movie.director[0]?.name : movie.director?.name || '';
+              return { title: movie.name, coverUrl, ...(director && { meta: { director } }) };
+            }
+          } catch (e) {}
+        }
+        // Fall back to og:image if no JSON-LD movie found
+        const parsed = parseTitleFromHtml(html);
+        if (parsed?.title) return parsed;
+      }
+    } catch (e) {}
+    return null;
+  }
+
   // GitHub repos: public API — no CORS proxy needed, returns clean title + owner avatar
   const ghMatch = url.match(/github\.com\/([^/?#]+)\/([^/?#]+)/);
   if (ghMatch) {
