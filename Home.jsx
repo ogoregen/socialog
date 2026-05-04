@@ -135,10 +135,8 @@ function Home({ onNavigate, onOpenDrawer }) {
       {/* Date + drawer button */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 28 }}>
         <button onClick={onOpenDrawer} style={{
-          width: 32, height: 32, borderRadius: 8, border: '1.5px solid var(--border)',
-          background: 'var(--surface)', cursor: 'pointer', fontSize: 16, lineHeight: 1,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: 'var(--fg-muted)', flexShrink: 0, marginTop: 4,
+          background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0',
+          fontSize: 20, color: 'var(--fg-muted)', flexShrink: 0, lineHeight: 1,
         }}>☰</button>
         <div>
           <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em' }}>
