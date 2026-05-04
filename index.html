@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>socialog</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%231a1a18'/><text x='16' y='22' text-anchor='middle' font-family='monospace' font-size='18' font-weight='700' fill='%23f5f0e8'>s</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='112' fill='%231a1a18'/><path d='M336 148C336 148 294 108 236 116C178 124 152 158 168 194C182 226 220 232 256 240C292 248 336 258 344 296C354 338 322 378 270 390C218 402 168 382 152 364' stroke='%23f5f0e8' stroke-width='42' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/icon-180.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -407,7 +407,13 @@
               borderRight: '1px solid var(--border)',
             }}>
             <div style={{ padding: '28px 24px 16px' }}>
-              <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.01em', marginBottom: 32 }}>socialog</div>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 64" style={{ width: 130, height: 32, marginBottom: 32, display: 'block' }}>
+                <rect width="64" height="64" rx="14" fill="#1a1a18"/>
+                <path d="M42.5 18.5 C42.5 18.5 37 13.5 29.5 14.5 C22 15.5 19 19.5 21 23.5 C22.8 27 27.5 28 32 29 C36.5 30 42.5 31.5 43.5 37 C44.5 42.5 40.5 47 33.5 48.5 C26.5 50 21 47.5 19 45"
+                  stroke="#f5f0e8" strokeWidth="5.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                <text x="80" y="41" fontFamily="system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif"
+                  fontSize="28" fontWeight="700" letterSpacing="-0.5" fill="currentColor">socialog</text>
+              </svg>
               {[
                 { icon: '◉', label: 'Profile',  action: () => setProfileOpen(true) },
                 { icon: '⚙', label: 'Settings', action: () => setSettingsOpen(true) },

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#1a1a18"/>
+  <!-- Stylized S: two thick arcs forming a continuous flowing curve -->
+  <path d="
+    M 336 148
+    C 336 148, 294 108, 236 116
+    C 178 124, 152 158, 168 194
+    C 182 226, 220 232, 256 240
+    C 292 248, 336 258, 344 296
+    C 354 338, 322 378, 270 390
+    C 218 402, 168 382, 152 364
+  "
+    stroke="#f5f0e8"
+    stroke-width="42"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+</svg>
