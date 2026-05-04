@@ -20,14 +20,15 @@ function StreakGrid({ routines }) {
 
   // Compute current streak: consecutive past days (excl. days with no routines) with ≥1 done
   let streak = 0;
-  for (let offset = 1; offset <= 365; offset++) {
+  for (let offset = 0; offset <= 365; offset++) {
     const d = new Date(now); d.setDate(now.getDate() - offset);
     const ds  = d.toISOString().slice(0, 10);
     const dow = d.getDay();
     const scheduled = routines.filter(r => r.days.includes(dow));
     if (!scheduled.length) continue;
     const completed = scheduled.filter(r => r.completions && r.completions[ds]).length;
-    if (completed > 0) streak++; else break;
+    if (completed > 0) streak++;
+    else if (offset > 0) break; // today being incomplete doesn't break the streak
   }
 
   function cellColor(day) {
