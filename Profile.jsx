@@ -168,7 +168,7 @@ function ProfilePage({ onBack }) {
     else if (offset > 0) cur = 0;
   }
 
-  const rawCounts = [0, 0, 0, 0, 0, 0, 0];
+  const rawCounts = [0, 0, 0, 0, 0, 0, 0]; // Sun=0
   routines.forEach(r =>
     Object.keys(r.completions || {}).forEach(ds =>
       rawCounts[new Date(ds + 'T12:00:00').getDay()]++
@@ -177,13 +177,26 @@ function ProfilePage({ onBack }) {
   todos.filter(t => t.done && t.doneAt).forEach(t =>
     rawCounts[new Date(t.doneAt.slice(0, 10) + 'T12:00:00').getDay()]++
   );
-  const MON        = [1, 2, 3, 4, 5, 6, 0];
-  const dayCounts  = MON.map(i => rawCounts[i]);
-  const dayMax     = Math.max(...dayCounts);
+
+  // How many times each weekday has occurred since tracking started
+  const trackingStart = allDates[0] ? new Date(allDates[0]) : null;
+  const dowOccurrences = [0,1,2,3,4,5,6].map(dow => {
+    if (!trackingStart) return 1;
+    const start = new Date(trackingStart); start.setHours(0,0,0,0);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const totalDays = Math.round((today - start) / 86400000);
+    const offset = (dow - start.getDay() + 7) % 7;
+    return offset > totalDays ? 0 : Math.floor((totalDays - offset) / 7) + 1;
+  });
+
+  const MON       = [1, 2, 3, 4, 5, 6, 0];
+  const dayCounts = MON.map(dow => dowOccurrences[dow] > 0 ? rawCounts[dow] / dowOccurrences[dow] : 0);
+  const dayMax    = Math.max(...dayCounts);
   const hasActivity = dayMax > 0;
-  const activeDay  = hasActivity ? dayCounts.indexOf(dayMax) : -1;
-  const DAY_SHORT  = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  const DAY_FULL   = ['Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays', 'Sundays'];
+  const activeDay = hasActivity ? dayCounts.indexOf(dayMax) : -1;
+  const fmtAvg    = n => n === 0 ? '' : Number.isInteger(Math.round(n * 10) / 10) ? String(Math.round(n)) : n.toFixed(1);
+  const DAY_SHORT = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const DAY_FULL  = ['Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays', 'Sundays'];
 
   const typeCounts  = {};
   bookmarks.forEach(b => { typeCounts[b.type] = (typeCounts[b.type] || 0) + 1; });
@@ -351,14 +364,14 @@ function ProfilePage({ onBack }) {
               const top = i === activeDay;
               return (
                 <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, height: '100%', justifyContent: 'flex-end' }}>
-                  {count > 0 && <div style={{ fontSize: 8, lineHeight: 1, fontWeight: top ? 700 : 400, color: top ? '#22c55e' : 'var(--fg-muted)' }}>{count}</div>}
+                  {count > 0 && <div style={{ fontSize: 8, lineHeight: 1, fontWeight: top ? 700 : 400, color: top ? '#22c55e' : 'var(--fg-muted)' }}>{fmtAvg(count)}</div>}
                   <div style={{ width: '100%', height: h, borderRadius: 4, background: top ? '#22c55e' : 'var(--border)' }} />
                   <div style={{ fontSize: 9, fontWeight: top ? 700 : 400, color: top ? '#22c55e' : 'var(--fg-muted)' }}>{DAY_SHORT[i]}</div>
                 </div>
               );
             })}
           </div>
-          <div style={{ fontSize: 12, color: 'var(--fg-muted)' }}>Most active on {DAY_FULL[activeDay]}</div>
+          <div style={{ fontSize: 12, color: 'var(--fg-muted)' }}>Avg. completions per day · most active on {DAY_FULL[activeDay]}</div>
         </>}
 
         {/* Import from */}
