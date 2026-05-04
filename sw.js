@@ -40,18 +40,9 @@ self.addEventListener('install', e => {
 
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys => {
-      const stale = keys.filter(k => k !== CACHE);
-      return Promise.all(stale.map(k => caches.delete(k)))
-        .then(() => self.clients.claim())
-        .then(() => {
-          // Notify open windows to reload so they pick up the new files.
-          // Only fires on update (stale caches existed), not on first install.
-          if (!stale.length) return;
-          return self.clients.matchAll({ type: 'window' })
-            .then(clients => clients.forEach(c => c.postMessage({ type: 'SW_UPDATED' })));
-        });
-    })
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 
