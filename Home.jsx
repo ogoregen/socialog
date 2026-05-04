@@ -164,24 +164,28 @@ function Home({ onNavigate, onOpenDrawer }) {
       </div>
 
       {/* Daily intention */}
-      <input
-        type="text"
-        value={intention}
-        onChange={handleIntention}
-        placeholder="What matters today?"
-        maxLength={120}
-        style={{
-          display: 'block', width: '100%', boxSizing: 'border-box',
-          background: 'none', border: 'none', outline: 'none',
-          borderBottom: intention ? '1px solid var(--border)' : '1px dashed var(--border)',
-          padding: '4px 0 10px',
-          fontSize: 17, fontFamily: 'inherit',
-          fontWeight: intention ? 500 : 400,
-          color: intention ? 'var(--fg)' : 'var(--fg-muted)',
-          letterSpacing: '-0.01em',
-          marginBottom: 28,
-        }}
-      />
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--fg-muted)', marginBottom: 8 }}>
+          Intention
+        </div>
+        <input
+          type="text"
+          value={intention}
+          onChange={handleIntention}
+          placeholder="What matters today?"
+          maxLength={120}
+          style={{
+            display: 'block', width: '100%', boxSizing: 'border-box',
+            background: 'none', border: 'none', outline: 'none',
+            borderBottom: intention ? '1px solid var(--border)' : '1px dashed var(--border)',
+            padding: '4px 0 10px',
+            fontSize: 17, fontFamily: 'inherit',
+            fontWeight: intention ? 500 : 400,
+            color: 'var(--fg)',
+            letterSpacing: '-0.01em',
+          }}
+        />
+      </div>
 
       {/* Streak grid — always shown if user has any routines */}
       {routines.length > 0 && <StreakGrid routines={routines} />}
