@@ -511,8 +511,8 @@ function GridCard({ bm, onEdit, onDelete }) {
             {typeInfo.label}
           </span>
           <div style={{ flex: 1 }} />
-          <button onClick={() => onEdit(bm)} style={{ background: 'rgba(0,0,0,0.12)', border: 'none', borderRadius: 6, fontSize: 10, color: 'var(--fg-muted)', cursor: 'pointer', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
-          <button onClick={() => onDelete(bm.id)} style={{ background: 'rgba(0,0,0,0.12)', border: 'none', borderRadius: 6, fontSize: 12, color: 'var(--fg-muted)', cursor: 'pointer', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+          <button onClick={() => onEdit(bm)} style={{ background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: 6, fontSize: 10, color: '#fff', cursor: 'pointer', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
+          <button onClick={() => onDelete(bm.id)} style={{ background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: 6, fontSize: 12, color: '#fff', cursor: 'pointer', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
         </div>
         <div style={{ padding: '10px 10px 8px' }}>
           {!bm.coverUrl && <div style={{ fontSize: 22, opacity: 0.2, marginBottom: 6, lineHeight: 1 }}>{typeInfo.icon}</div>}
