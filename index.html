@@ -91,6 +91,7 @@
   <script type="text/babel" src="Routines.jsx"></script>
   <script type="text/babel" src="Home.jsx"></script>
   <script type="text/babel" src="Profile.jsx"></script>
+  <script type="text/babel" src="Settings.jsx"></script>
 
   <script type="text/babel">
     // ── Tweaks defaults ───────────────────────────────────────────────────────
@@ -116,9 +117,13 @@
       );
       const tabRefs    = React.useRef({});
       const touchRef   = React.useRef(null);
-      const [tweaks, setTweaksState] = React.useState(TWEAK_DEFAULTS);
-      const [tweaksOpen, setTweaksOpen]   = React.useState(false);
-      const [profileOpen, setProfileOpen] = React.useState(false);
+      const [tweaks, setTweaksState] = React.useState(() => ({
+        ...TWEAK_DEFAULTS,
+        theme: localStorage.getItem('socialog_theme') || TWEAK_DEFAULTS.theme,
+      }));
+      const [tweaksOpen, setTweaksOpen]     = React.useState(false);
+      const [profileOpen, setProfileOpen]   = React.useState(false);
+      const [settingsOpen, setSettingsOpen] = React.useState(false);
 
       // ── Drawer (left nav panel) ──────────────────────────────────────────────
       const drawerRef   = React.useRef(null);
@@ -279,6 +284,7 @@
         const update = typeof key === 'object' ? key : { [key]: val };
         setTweaksState(prev => {
           const next = { ...prev, ...update };
+          if (next.theme) localStorage.setItem('socialog_theme', next.theme);
           window.parent.postMessage({ type: '__edit_mode_set_keys', edits: next }, '*');
           return next;
         });
@@ -401,19 +407,27 @@
             }}>
             <div style={{ padding: '28px 24px 16px' }}>
               <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.01em', marginBottom: 32 }}>socialog</div>
-              <button onClick={() => { closeDrawer(); setTimeout(() => setProfileOpen(true), 320); }} style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                width: '100%', background: 'none', border: 'none', cursor: 'pointer',
-                padding: '10px 0', borderRadius: 8, color: 'var(--fg)', textAlign: 'left',
-              }}>
-                <span style={{ fontSize: 18, width: 24, textAlign: 'center', color: 'var(--fg-muted)' }}>◉</span>
-                <span style={{ fontSize: 15, fontWeight: 500 }}>Profile</span>
-              </button>
+              {[
+                { icon: '◉', label: 'Profile',  action: () => setProfileOpen(true) },
+                { icon: '⚙', label: 'Settings', action: () => setSettingsOpen(true) },
+              ].map(({ icon, label, action }) => (
+                <button key={label} onClick={() => { closeDrawer(); setTimeout(action, 320); }} style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  width: '100%', background: 'none', border: 'none', cursor: 'pointer',
+                  padding: '10px 0', color: 'var(--fg)', textAlign: 'left',
+                }}>
+                  <span style={{ fontSize: 18, width: 24, textAlign: 'center', color: 'var(--fg-muted)' }}>{icon}</span>
+                  <span style={{ fontSize: 15, fontWeight: 500 }}>{label}</span>
+                </button>
+              ))}
             </div>
           </div>
 
           {/* ── Profile page ── */}
           {profileOpen && <ProfilePage onBack={() => setProfileOpen(false)} />}
+
+          {/* ── Settings page ── */}
+          {settingsOpen && <SettingsPage theme={tweaks.theme} onThemeChange={v => setTweak('theme', v)} onBack={() => setSettingsOpen(false)} />}
 
           {/* ── Tweaks panel ── */}
           {tweaksOpen && (
