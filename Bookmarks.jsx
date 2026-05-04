@@ -671,8 +671,8 @@ function Bookmarks() {
         </div>
       )}
 
-      {/* Type filter */}
-      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 8 }}>
+      {/* Filters — type + status in one scrollable row */}
+      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 20 }}>
         {[['all','All'], ...Object.entries(BOOKMARK_TYPES).map(([k,t]) => [k, t.label])].map(([key, label]) => (
           <button key={key} onClick={() => setTypeFilter(key)} style={{
             padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500,
@@ -682,19 +682,16 @@ function Bookmarks() {
             borderColor: typeFilter === key ? 'var(--fg)' : 'var(--border)', transition: 'all 0.15s',
           }}>{label}</button>
         ))}
-      </div>
-
-      {/* Status filter */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
-        {[['all','All'], ['want to try','Want'], ['in progress','Doing'], ['done','Done']].map(([key, label]) => {
+        <div style={{ width: 1, background: 'var(--border)', flexShrink: 0, margin: '4px 2px' }} />
+        {[['want to try','Want'], ['in progress','Doing'], ['done','Done']].map(([key, label]) => {
           const active = filter === key;
           const cc = STATUS_COLORS[key];
           return (
-            <button key={key} onClick={() => setFilter(key)} style={{
+            <button key={key} onClick={() => setFilter(active ? 'all' : key)} style={{
               padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500,
-              cursor: 'pointer', border: '1px solid',
+              cursor: 'pointer', border: '1px solid', whiteSpace: 'nowrap', flexShrink: 0,
               background: active ? cc : 'transparent',
-              color: active ? (key === 'all' ? 'var(--bg)' : '#fff') : 'var(--fg-muted)',
+              color: active ? '#fff' : 'var(--fg-muted)',
               borderColor: active ? cc : 'var(--border)', transition: 'all 0.15s',
             }}>{label}</button>
           );
