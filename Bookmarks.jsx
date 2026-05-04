@@ -665,7 +665,7 @@ function Bookmarks() {
               padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500,
               cursor: 'pointer', border: '1px solid',
               background: active ? cc : 'transparent',
-              color: active ? '#fff' : 'var(--fg-muted)',
+              color: active ? (key === 'all' ? 'var(--bg)' : '#fff') : 'var(--fg-muted)',
               borderColor: active ? cc : 'var(--border)', transition: 'all 0.15s',
             }}>{label}</button>
           );

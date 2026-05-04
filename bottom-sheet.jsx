@@ -108,6 +108,7 @@ function BottomSheet({ onClose, maxHeight, children }) {
         onTouchEnd={handleTouchEnd}
         style={{
           background: 'var(--bg)', borderRadius: '20px 20px 0 0', width: '100%',
+          border: '1px solid var(--border)', borderBottom: 'none',
           maxHeight: maxHeight || '85vh', overflowY: 'auto', padding: '0 0 40px',
           overscrollBehavior: 'none',
         }}>

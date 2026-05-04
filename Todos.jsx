@@ -305,7 +305,7 @@ function Todos() {
                 cursor: 'pointer', border: '1px solid', whiteSpace: 'nowrap',
                 display: 'flex', alignItems: 'center', gap: 5,
                 background: active ? (cc || 'var(--fg)') : 'transparent',
-                color: active ? '#fff' : 'var(--fg-muted)',
+                color: active ? (cc ? '#fff' : 'var(--bg)') : 'var(--fg-muted)',
                 borderColor: active ? (cc || 'var(--fg)') : 'var(--border)',
                 transition: 'all 0.15s',
                 borderTopRightRadius: (!isAll && c.custom) ? 0 : 20,
@@ -322,7 +322,7 @@ function Todos() {
                   padding: '4px 7px 4px 5px', borderRadius: '0 20px 20px 0', fontSize: 11,
                   cursor: 'pointer', border: '1px solid', borderLeft: 'none',
                   background: active ? (cc || 'var(--fg)') : 'transparent',
-                  color: active ? '#fff' : 'var(--fg-muted)',
+                  color: active ? (cc ? '#fff' : 'var(--bg)') : 'var(--fg-muted)',
                   borderColor: active ? (cc || 'var(--fg)') : 'var(--border)',
                   transition: 'all 0.15s',
                 }}>×</button>
