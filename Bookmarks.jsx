@@ -461,14 +461,20 @@ function GridCard({ bm, onEdit, onDelete }) {
   }
 
   const aspectPct = bm.type === 'music' ? '100%' : '150%';
+  const titleEl = (
+    <div style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.35, marginBottom: 3,
+      display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+      {bm.title || '(untitled)'}
+    </div>
+  );
 
   return (
-    <div>
+    <div style={{ position: 'relative', borderRadius: 10, background: 'var(--surface)', border: '1px solid var(--border)', overflow: 'hidden' }}>
       {/* Cover */}
-      <div style={{ position: 'relative', paddingTop: aspectPct, borderRadius: 10, overflow: 'hidden', background: 'var(--surface)', border: '1px solid var(--border)', marginBottom: 8 }}>
+      <div style={{ position: 'relative', paddingTop: aspectPct, overflow: 'hidden', background: 'var(--bg)' }}>
         {bm.coverUrl
           ? <img src={bm.coverUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-          : <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, opacity: 0.2 }}>{typeInfo.icon}</div>
+          : <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, opacity: 0.15 }}>{typeInfo.icon}</div>
         }
         <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
           <span style={{ background: STATUS_COLORS[bm.status], color: '#fff', fontSize: 9, fontWeight: 700, borderRadius: 8, padding: '3px 7px' }}>
@@ -485,19 +491,18 @@ function GridCard({ bm, onEdit, onDelete }) {
       </div>
 
       {/* Info */}
-      {bm.url
-        ? <a href={bm.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--fg)', textDecoration: 'none' }}>
-            <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.3, marginBottom: 3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{bm.title || '(untitled)'}</div>
-          </a>
-        : <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.3, marginBottom: 3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{bm.title || '(untitled)'}</div>
-      }
-      {bm.rating > 0 && (
-        <div style={{ fontSize: 12, color: '#f59e0b', marginBottom: 2, letterSpacing: '-0.5px' }}>
-          {'★'.repeat(bm.rating)}{'☆'.repeat(5 - bm.rating)}
+      <div style={{ padding: '8px 10px 10px' }}>
+        {bm.url
+          ? <a href={bm.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--fg)', textDecoration: 'none' }}>{titleEl}</a>
+          : titleEl}
+        {bm.rating > 0 && (
+          <div style={{ fontSize: 11, color: '#f59e0b', marginBottom: 2, letterSpacing: '-0.5px' }}>
+            {'★'.repeat(bm.rating)}{'☆'.repeat(5 - bm.rating)}
+          </div>
+        )}
+        <div style={{ fontSize: 11, color: 'var(--fg-muted)' }}>
+          {isDone && bm.doneAt ? formatLogDate(bm.doneAt) : subtitle}
         </div>
-      )}
-      <div style={{ fontSize: 11, color: 'var(--fg-muted)' }}>
-        {isDone && bm.doneAt ? formatLogDate(bm.doneAt) : subtitle}
       </div>
     </div>
   );
