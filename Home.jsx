@@ -84,7 +84,7 @@ function StreakGrid({ routines }) {
 }
 
 // ── Main Home view ────────────────────────────────────────────────────────────
-function Home({ onNavigate }) {
+function Home({ onNavigate, onOpenProfile }) {
   const todayKey = today();
   const todayIdx = currentDayIndex();
 
@@ -132,14 +132,22 @@ function Home({ onNavigate }) {
   return (
     <div style={{ padding: '20px 20px 60px' }}>
 
-      {/* Date */}
-      <div style={{ marginBottom: 28 }}>
-        <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em' }}>
-          {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
+      {/* Date + profile button */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
+        <div>
+          <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em' }}>
+            {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
+          </div>
+          <div style={{ fontSize: 13, color: 'var(--fg-muted)', marginTop: 3 }}>
+            {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          </div>
         </div>
-        <div style={{ fontSize: 13, color: 'var(--fg-muted)', marginTop: 3 }}>
-          {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-        </div>
+        <button onClick={onOpenProfile} style={{
+          width: 32, height: 32, borderRadius: '50%', border: '1.5px solid var(--border)',
+          background: 'var(--surface)', cursor: 'pointer', fontSize: 14, lineHeight: 1,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: 'var(--fg-muted)', flexShrink: 0, marginTop: 4,
+        }}>◉</button>
       </div>
 
       {/* Streak grid — always shown if user has any routines */}

@@ -90,6 +90,7 @@
   <script type="text/babel" src="Todos.jsx"></script>
   <script type="text/babel" src="Routines.jsx"></script>
   <script type="text/babel" src="Home.jsx"></script>
+  <script type="text/babel" src="Profile.jsx"></script>
 
   <script type="text/babel">
     // ── Tweaks defaults ───────────────────────────────────────────────────────
@@ -116,7 +117,8 @@
       const tabRefs    = React.useRef({});
       const touchRef   = React.useRef(null);
       const [tweaks, setTweaksState] = React.useState(TWEAK_DEFAULTS);
-      const [tweaksOpen, setTweaksOpen] = React.useState(false);
+      const [tweaksOpen, setTweaksOpen]   = React.useState(false);
+      const [profileOpen, setProfileOpen] = React.useState(false);
 
       // Persist active tab + reset scroll on the newly active tab
       React.useEffect(() => {
@@ -256,7 +258,7 @@
                   transition: 'transform 0.45s ease',
                   pointerEvents: id === tab ? 'auto' : 'none',
                 }}>
-                  {id === 'home'      && <Home onNavigate={setTab} />}
+                  {id === 'home'      && <Home onNavigate={setTab} onOpenProfile={() => setProfileOpen(true)} />}
                   {id === 'bookmarks' && <Bookmarks />}
                   {id === 'todos'     && <Todos />}
                   {id === 'routines'  && <Routines />}
@@ -310,6 +312,8 @@
           </nav>
 
           <Toaster />
+
+          {profileOpen && <ProfilePanel onClose={() => setProfileOpen(false)} />}
 
           {/* ── Tweaks panel ── */}
           {tweaksOpen && (
