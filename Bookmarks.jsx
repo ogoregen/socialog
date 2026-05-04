@@ -507,12 +507,12 @@ function GridCard({ bm, onEdit, onDelete }) {
           <span style={{ background: STATUS_COLORS[bm.status], color: '#fff', fontSize: 9, fontWeight: 700, borderRadius: 8, padding: '3px 7px' }}>
             {STATUS_LABELS[bm.status]}
           </span>
-          <span style={{ background: 'rgba(0,0,0,0.45)', color: '#fff', fontSize: 9, fontWeight: 600, borderRadius: 8, padding: '3px 7px' }}>
+          <span style={{ background: 'rgba(0,0,0,0.65)', color: '#fff', fontSize: 9, fontWeight: 600, borderRadius: 8, padding: '3px 7px' }}>
             {typeInfo.label}
           </span>
           <div style={{ flex: 1 }} />
-          <button onClick={() => onEdit(bm)} style={{ background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: 6, fontSize: 10, color: '#fff', cursor: 'pointer', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
-          <button onClick={() => onDelete(bm.id)} style={{ background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: 6, fontSize: 12, color: '#fff', cursor: 'pointer', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+          <button onClick={() => onEdit(bm)} style={{ background: 'rgba(0,0,0,0.65)', border: 'none', borderRadius: 6, fontSize: 10, color: '#fff', cursor: 'pointer', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
+          <button onClick={() => onDelete(bm.id)} style={{ background: 'rgba(0,0,0,0.65)', border: 'none', borderRadius: 6, fontSize: 12, color: '#fff', cursor: 'pointer', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
         </div>
         <div style={{ padding: '10px 10px 8px' }}>
           {!bm.coverUrl && <div style={{ fontSize: 22, opacity: 0.2, marginBottom: 6, lineHeight: 1 }}>{typeInfo.icon}</div>}
@@ -546,12 +546,12 @@ function GridCard({ bm, onEdit, onDelete }) {
           <span style={{ background: STATUS_COLORS[bm.status], color: '#fff', fontSize: 9, fontWeight: 700, borderRadius: 8, padding: '3px 7px' }}>
             {STATUS_LABELS[bm.status]}
           </span>
-          <span style={{ background: 'rgba(0,0,0,0.45)', color: '#fff', fontSize: 9, fontWeight: 600, borderRadius: 8, padding: '3px 7px' }}>
+          <span style={{ background: 'rgba(0,0,0,0.65)', color: '#fff', fontSize: 9, fontWeight: 600, borderRadius: 8, padding: '3px 7px' }}>
             {typeInfo.label}
           </span>
           <div style={{ flex: 1 }} />
-          <button onClick={() => onEdit(bm)} style={{ background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: 6, fontSize: 11, color: '#fff', cursor: 'pointer', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
-          <button onClick={() => onDelete(bm.id)} style={{ background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: 6, fontSize: 14, color: '#fff', cursor: 'pointer', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+          <button onClick={() => onEdit(bm)} style={{ background: 'rgba(0,0,0,0.65)', border: 'none', borderRadius: 6, fontSize: 11, color: '#fff', cursor: 'pointer', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
+          <button onClick={() => onDelete(bm.id)} style={{ background: 'rgba(0,0,0,0.65)', border: 'none', borderRadius: 6, fontSize: 14, color: '#fff', cursor: 'pointer', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
         </div>
       </div>
 
