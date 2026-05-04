@@ -505,7 +505,7 @@ function GridCard({ bm, onEdit, onDelete }) {
             <img src={bm.coverUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
         )}
-        <div style={{ position: 'absolute', top: 6, left: 6, right: 6, display: 'flex', alignItems: 'center', gap: 3 }}>
+        <div style={{ position: 'absolute', top: 6, left: 6, right: 6, zIndex: 1, display: 'flex', alignItems: 'center', gap: 3 }}>
           <span style={{ background: STATUS_COLORS[bm.status], color: '#fff', fontSize: 9, fontWeight: 700, borderRadius: 8, padding: '3px 7px' }}>
             {STATUS_LABELS[bm.status]}
           </span>
