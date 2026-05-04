@@ -20,7 +20,7 @@ function hasCompletionInWeek(completions, monday) {
   });
 }
 
-function RoutineModal({ routine, onSave, onClose }) {
+function RoutineModal({ routine, onSave, onDelete, onClose }) {
   const [form, setForm] = React.useState(routine);
 
   function toggleDay(d) {
@@ -127,6 +127,12 @@ function RoutineModal({ routine, onSave, onClose }) {
           }}>
             Save routine
           </button>
+          {routine.id && (
+            <button onClick={() => { onDelete(routine.id); onClose(); }} style={{
+              width: '100%', padding: '12px', borderRadius: 12, background: 'none',
+              color: 'var(--fg-muted)', border: 'none', fontSize: 14, cursor: 'pointer', opacity: 0.5,
+            }}>Delete routine</button>
+          )}
         </div>
       </>)}
     </BottomSheet>
@@ -156,7 +162,7 @@ function calcStreak(routine, isWeekly, completedThisWeek) {
   return streak;
 }
 
-function RoutineRow({ routine, onToggleToday, onEdit, onDelete }) {
+function RoutineRow({ routine, onToggleToday, onEdit }) {
   const todayKey = today();
   const todayDayIdx = currentDayIndex();
   const thisMonday = getMondayOf(new Date());
@@ -228,11 +234,8 @@ function RoutineRow({ routine, onToggleToday, onEdit, onDelete }) {
         </div>
       )}
 
-      {/* Edit / delete */}
-      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-        <button onClick={() => onEdit(routine)} style={{ background: 'var(--border)', border: 'none', borderRadius: 8, fontSize: 11, color: 'var(--fg-muted)', cursor: 'pointer', width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
-        <button onClick={() => onDelete(routine.id)} style={{ background: 'var(--border)', border: 'none', borderRadius: 8, fontSize: 14, color: 'var(--fg-muted)', cursor: 'pointer', width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
-      </div>
+      {/* Edit */}
+      <button onClick={() => onEdit(routine)} style={{ background: 'var(--border)', border: 'none', borderRadius: 8, fontSize: 11, color: 'var(--fg-muted)', cursor: 'pointer', width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✎</button>
     </div>
   );
 }
@@ -364,7 +367,7 @@ function Routines() {
         <div style={{ marginBottom: 8 }}>
           <div style={{ fontSize: 11, color: 'var(--fg-muted)', opacity: 0.5, marginBottom: 8, paddingLeft: 2 }}>Today</div>
           {dailyRoutines.map(r => (
-            <RoutineRow key={r.id} routine={r} onToggleToday={handleToggleToday} onEdit={r => setModal(r)} onDelete={handleDelete} />
+            <RoutineRow key={r.id} routine={r} onToggleToday={handleToggleToday} onEdit={r => setModal(r)} />
           ))}
         </div>
       )}
@@ -374,7 +377,7 @@ function Routines() {
         <div style={{ marginTop: dailyRoutines.length > 0 ? 28 : 0 }}>
           <div style={{ fontSize: 11, color: 'var(--fg-muted)', opacity: 0.5, marginBottom: 8, paddingLeft: 2 }}>This week</div>
           {weeklyRoutines.map(r => (
-            <RoutineRow key={r.id} routine={r} onToggleToday={handleToggleToday} onEdit={r => setModal(r)} onDelete={handleDelete} />
+            <RoutineRow key={r.id} routine={r} onToggleToday={handleToggleToday} onEdit={r => setModal(r)} />
           ))}
         </div>
       )}
@@ -384,12 +387,12 @@ function Routines() {
         <div style={{ marginTop: (dailyRoutines.length > 0 || weeklyRoutines.length > 0) ? 28 : 0 }}>
           <div style={{ fontSize: 11, color: 'var(--fg-muted)', opacity: 0.5, marginBottom: 8, paddingLeft: 2 }}>Other days</div>
           {otherRoutines.map(r => (
-            <RoutineRow key={r.id} routine={r} onToggleToday={handleToggleToday} onEdit={r => setModal(r)} onDelete={handleDelete} />
+            <RoutineRow key={r.id} routine={r} onToggleToday={handleToggleToday} onEdit={r => setModal(r)} />
           ))}
         </div>
       )}
 
-      {modal && <RoutineModal routine={modal} onSave={handleSave} onClose={() => setModal(null)} />}
+      {modal && <RoutineModal routine={modal} onSave={handleSave} onDelete={handleDelete} onClose={() => setModal(null)} />}
     </div>
   );
 }

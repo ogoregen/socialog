@@ -311,7 +311,7 @@ function QuickAdd({ onPreview }) {
 }
 
 // ── Edit modal ────────────────────────────────────────────────────────────────
-function BookmarkModal({ bm, isNew, fetchPromise, onSave, onClose }) {
+function BookmarkModal({ bm, isNew, fetchPromise, onSave, onDelete, onClose }) {
   const [form, setForm]         = React.useState(bm);
   const [fetching, setFetching] = React.useState(!!fetchPromise);
 
@@ -432,6 +432,12 @@ function BookmarkModal({ bm, isNew, fetchPromise, onSave, onClose }) {
             width: '100%', padding: '14px', borderRadius: 12, background: 'var(--fg)',
             color: 'var(--bg)', border: 'none', fontSize: 15, fontWeight: 600, cursor: 'pointer', marginTop: 4,
           }}>{isNew ? 'Add to archive' : 'Save changes'}</button>
+          {!isNew && (
+            <button onClick={() => { onDelete(bm.id); onClose(); }} style={{
+              width: '100%', padding: '12px', borderRadius: 12, background: 'none',
+              color: 'var(--fg-muted)', border: 'none', fontSize: 14, cursor: 'pointer', opacity: 0.5,
+            }}>Delete</button>
+          )}
         </div>
       </>)}
     </BottomSheet>
@@ -439,7 +445,7 @@ function BookmarkModal({ bm, isNew, fetchPromise, onSave, onClose }) {
 }
 
 // ── List card ─────────────────────────────────────────────────────────────────
-function ListCard({ bm, onEdit, onDelete }) {
+function ListCard({ bm, onEdit }) {
   const typeInfo = BOOKMARK_TYPES[bm.type] || BOOKMARK_TYPES.article;
   const isDone   = bm.status === 'done';
   const subtitle = bm.meta?.artist || bm.meta?.author || bm.meta?.director || bm.meta?.source || typeInfo.label;
@@ -476,7 +482,6 @@ function ListCard({ bm, onEdit, onDelete }) {
       </div>
       <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
         <button onClick={() => onEdit(bm)} style={{ background: 'var(--border)', border: 'none', borderRadius: 7, fontSize: 11, color: 'var(--fg-muted)', cursor: 'pointer', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
-        <button onClick={() => onDelete(bm.id)} style={{ background: 'var(--border)', border: 'none', borderRadius: 7, fontSize: 14, color: 'var(--fg-muted)', cursor: 'pointer', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
       </div>
     </div>
   );
@@ -486,7 +491,7 @@ function ListCard({ bm, onEdit, onDelete }) {
 const COVER_TYPES = new Set(['movie', 'music', 'book']);
 
 // ── Grid card ─────────────────────────────────────────────────────────────────
-function GridCard({ bm, onEdit, onDelete }) {
+function GridCard({ bm, onEdit }) {
   const typeInfo = BOOKMARK_TYPES[bm.type] || BOOKMARK_TYPES.article;
   const isDone   = bm.status === 'done';
   const subtitle = bm.meta?.artist || bm.meta?.author || bm.meta?.director || bm.meta?.source || typeInfo.label;
@@ -514,7 +519,6 @@ function GridCard({ bm, onEdit, onDelete }) {
           </span>
           <div style={{ flex: 1 }} />
           <button onClick={() => onEdit(bm)} style={{ background: 'rgba(0,0,0,0.65)', border: 'none', borderRadius: 6, fontSize: 10, color: '#fff', cursor: 'pointer', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
-          <button onClick={() => onDelete(bm.id)} style={{ background: 'rgba(0,0,0,0.65)', border: 'none', borderRadius: 6, fontSize: 12, color: '#fff', cursor: 'pointer', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
         </div>
         <div style={{ padding: '10px 10px 8px' }}>
           {!bm.coverUrl && <div style={{ fontSize: 22, opacity: 0.2, marginBottom: 6, lineHeight: 1 }}>{typeInfo.icon}</div>}
@@ -553,7 +557,6 @@ function GridCard({ bm, onEdit, onDelete }) {
           </span>
           <div style={{ flex: 1 }} />
           <button onClick={() => onEdit(bm)} style={{ background: 'rgba(0,0,0,0.65)', border: 'none', borderRadius: 6, fontSize: 11, color: '#fff', cursor: 'pointer', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
-          <button onClick={() => onDelete(bm.id)} style={{ background: 'rgba(0,0,0,0.65)', border: 'none', borderRadius: 6, fontSize: 14, color: '#fff', cursor: 'pointer', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
         </div>
       </div>
 
@@ -703,13 +706,13 @@ function Bookmarks() {
         <div style={{ columnCount: 2, columnGap: 12 }}>
           {sorted.map(bm => (
             <div key={bm.id} style={{ breakInside: 'avoid', display: 'block', marginBottom: 12 }}>
-              <GridCard bm={bm} onEdit={b => setModal(b)} onDelete={handleDelete} />
+              <GridCard bm={bm} onEdit={b => setModal(b)} />
             </div>
           ))}
         </div>
       ) : (
         <div>
-          {sorted.map(bm => <ListCard key={bm.id} bm={bm} onEdit={b => setModal(b)} onDelete={handleDelete} />)}
+          {sorted.map(bm => <ListCard key={bm.id} bm={bm} onEdit={b => setModal(b)} />)}
         </div>
       )}
 
@@ -720,7 +723,7 @@ function Bookmarks() {
       )}
 
       {modalBm && (
-        <BookmarkModal bm={modalBm} fetchPromise={modal.fetchPromise} isNew={!items.find(b => b.id === modalBm.id)} onSave={handleSave} onClose={closeModal} />
+        <BookmarkModal bm={modalBm} fetchPromise={modal.fetchPromise} isNew={!items.find(b => b.id === modalBm.id)} onSave={handleSave} onDelete={handleDelete} onClose={closeModal} />
       )}
     </div>
   );
