@@ -350,7 +350,8 @@ function ProfilePage({ onBack }) {
               const h = Math.max(4, (count / dayMax) * 52);
               const top = i === activeDay;
               return (
-                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, height: '100%', justifyContent: 'flex-end' }}>
+                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, height: '100%', justifyContent: 'flex-end' }}>
+                  {count > 0 && <div style={{ fontSize: 8, lineHeight: 1, fontWeight: top ? 700 : 400, color: top ? '#22c55e' : 'var(--fg-muted)' }}>{count}</div>}
                   <div style={{ width: '100%', height: h, borderRadius: 4, background: top ? '#22c55e' : 'var(--border)' }} />
                   <div style={{ fontSize: 9, fontWeight: top ? 700 : 400, color: top ? '#22c55e' : 'var(--fg-muted)' }}>{DAY_SHORT[i]}</div>
                 </div>
