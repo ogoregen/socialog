@@ -468,7 +468,7 @@ function ListCard({ bm, onEdit, onDelete }) {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-end', flexShrink: 0 }}>
         <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 20, border: '1px solid var(--border)', color: 'var(--fg-muted)', fontWeight: 600, whiteSpace: 'nowrap' }}>
-          {typeInfo.icon} {typeInfo.label}
+          {typeInfo.label}
         </span>
         <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 20, background: STATUS_COLORS[bm.status], color: '#fff', fontWeight: 700, whiteSpace: 'nowrap' }}>
           {STATUS_LABELS[bm.status]}
