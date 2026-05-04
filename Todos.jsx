@@ -72,10 +72,11 @@ function getBucket(iso) {
   return 'later';
 }
 
-function TaskModal({ allCats, onAddCat, onSave, onClose }) {
-  const [text, setText]           = React.useState('');
-  const [cat, setCat]             = React.useState(null);
-  const [dueDate, setDueDate]     = React.useState(null);
+function TaskModal({ allCats, onAddCat, onSave, onDelete, onClose, item }) {
+  const [text, setText]           = React.useState(item?.text || '');
+  const [cat, setCat]             = React.useState(item?.category || null);
+  const [dueDate, setDueDate]     = React.useState(item?.dueDate || null);
+  const isEdit = !!item;
   const [addingCat, setAddingCat] = React.useState(false);
   const [newCatName, setNewCatName]   = React.useState('');
   const [newCatColor, setNewCatColor] = React.useState(CAT_PALETTE[0]);
@@ -112,7 +113,7 @@ function TaskModal({ allCats, onAddCat, onSave, onClose }) {
           <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border)' }} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 16px' }}>
-          <span style={{ fontSize: 17, fontWeight: 600 }}>New task</span>
+          <span style={{ fontSize: 17, fontWeight: 600 }}>{isEdit ? 'Edit task' : 'New task'}</span>
           <button onClick={dismiss} style={{ background: 'none', border: 'none', fontSize: 22, color: 'var(--fg-muted)', cursor: 'pointer', lineHeight: 1, padding: 0 }}>×</button>
         </div>
         <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -197,12 +198,19 @@ function TaskModal({ allCats, onAddCat, onSave, onClose }) {
             </div>
           </div>
           <button
-            onClick={() => text.trim() && onSave({ text: text.trim(), category: cat, dueDate })}
+            onClick={() => text.trim() && onSave({ ...(isEdit && { id: item.id }), text: text.trim(), category: cat, dueDate })}
             style={{ width: '100%', padding: '14px', borderRadius: 12, background: 'var(--fg)',
               color: 'var(--bg)', border: 'none', fontSize: 15, fontWeight: 600,
               cursor: 'pointer', opacity: text.trim() ? 1 : 0.4 }}>
-            Add task
+            {isEdit ? 'Save' : 'Add task'}
           </button>
+          {isEdit && (
+            <button onClick={() => { onDelete(item.id); onClose(); }}
+              style={{ width: '100%', padding: '12px', borderRadius: 12, background: 'none',
+                color: 'var(--fg-muted)', border: 'none', fontSize: 14, cursor: 'pointer', opacity: 0.5 }}>
+              Delete task
+            </button>
+          )}
         </div>
       </>)}
     </BottomSheet>
@@ -212,7 +220,7 @@ function TaskModal({ allCats, onAddCat, onSave, onClose }) {
 function Todos() {
   const [items, setItems]           = React.useState(() => load('todos') || []);
   const [customCats, setCustomCats] = React.useState(() => load('categories') || DEFAULT_CATS);
-  const [modal, setModal]         = React.useState(false);
+  const [modal, setModal]         = React.useState(null); // null | 'new' | item
   const [catFilter, setCatFilter] = React.useState(null);
 
   const allCats = customCats;
@@ -228,10 +236,14 @@ function Todos() {
     setCustomCats(prev => prev.filter(c => c.id !== id));
   }
 
-  function handleAddTask({ text, category, dueDate }) {
-    setItems(prev => [{ id: uid(), text, done: false, category, dueDate, createdAt: new Date().toISOString() }, ...prev]);
-    setModal(false);
-    showToast('Task added');
+  function handleAddTask({ id, text, category, dueDate }) {
+    if (id) {
+      setItems(prev => prev.map(t => t.id === id ? { ...t, text, category, dueDate } : t));
+    } else {
+      setItems(prev => [{ id: uid(), text, done: false, category, dueDate, createdAt: new Date().toISOString() }, ...prev]);
+      showToast('Task added');
+    }
+    setModal(null);
   }
 
   function toggleDone(id) {
@@ -281,10 +293,10 @@ function Todos() {
         borderRadius: 14, padding: '10px 12px', marginBottom: 20,
       }}>
         <span style={{ color: 'var(--fg-muted)', fontSize: 14, flexShrink: 0, width: 16, textAlign: 'center', display: 'inline-block' }}>✓</span>
-        <span onClick={() => setModal(true)} style={{ flex: 1, fontSize: 14, color: 'var(--fg-muted)', cursor: 'pointer', userSelect: 'none' }}>
+        <span onClick={() => setModal('new')} style={{ flex: 1, fontSize: 14, color: 'var(--fg-muted)', cursor: 'pointer', userSelect: 'none' }}>
           Add a task…
         </span>
-        <button onClick={() => setModal(true)} style={{
+        <button onClick={() => setModal('new')} style={{
           background: 'var(--fg)', color: 'var(--bg)', border: 'none',
           borderRadius: 8, width: 30, height: 30, fontSize: 18, cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
@@ -351,7 +363,7 @@ function Todos() {
               marginBottom: 8, paddingLeft: 2,
             }}>{bucket.label}</div>
             {tasks.map(t => (
-              <TodoRow key={t.id} item={t} allCats={allCats} onToggle={toggleDone} onDelete={deleteItem} onCycleCategory={cycleCategory} onSetDueDate={setDueDate} />
+              <TodoRow key={t.id} item={t} allCats={allCats} onToggle={toggleDone} onEdit={t => setModal(t)} />
             ))}
           </div>
         );
@@ -371,21 +383,21 @@ function Todos() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {shownDone.map(t => (
-              <TodoRow key={t.id} item={t} allCats={allCats} onToggle={toggleDone} onDelete={deleteItem} onCycleCategory={cycleCategory} onSetDueDate={setDueDate} />
+              <TodoRow key={t.id} item={t} allCats={allCats} onToggle={toggleDone} onEdit={t => setModal(t)} />
             ))}
           </div>
         </div>
       )}
 
-      {modal && <TaskModal allCats={allCats} onAddCat={addCustomCat} onSave={handleAddTask} onClose={() => setModal(false)} />}
+      {modal && <TaskModal allCats={allCats} onAddCat={addCustomCat} onSave={handleAddTask} onDelete={deleteItem} onClose={() => setModal(null)} item={modal === 'new' ? null : modal} />}
     </div>
   );
 }
 
-function TodoRow({ item, allCats, onToggle, onDelete, onCycleCategory, onSetDueDate }) {
-  const color    = catColor(item.category, allCats);
-  const dueFmt   = formatDueDate(item.dueDate);
-  const pillStyle = duePillStyle(dueFmt);
+function TodoRow({ item, allCats, onToggle, onEdit }) {
+  const color  = catColor(item.category, allCats);
+  const dueFmt = formatDueDate(item.dueDate);
+  const catLabel = item.category ? allCats.find(c => c.id === item.category)?.label : null;
 
   return (
     <div
@@ -419,53 +431,24 @@ function TodoRow({ item, allCats, onToggle, onDelete, onCycleCategory, onSetDueD
         }}>{item.text}</div>
       </div>
 
-      {/* Actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-        {item.done ? (
-          <span style={{ fontSize: 11, color: 'var(--fg-muted)', whiteSpace: 'nowrap', opacity: 0.6 }}>
-            {formatDoneDate(item.doneAt)}
+      {/* Badges + edit */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-end', flexShrink: 0 }}>
+        {dueFmt && (
+          <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 20, border: '1px solid var(--border)', color: 'var(--fg-muted)', fontWeight: 600, whiteSpace: 'nowrap' }}>
+            {dueFmt.label}
           </span>
-        ) : (
-          <div style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center',
-            padding: item.dueDate ? '5px 6px 5px 10px' : '5px 10px',
-            borderRadius: 20, gap: 5, cursor: 'pointer', ...pillStyle }}>
-            <span style={{
-              fontSize: 11, fontWeight: 600, pointerEvents: 'none', whiteSpace: 'nowrap',
-            }}>{dueFmt ? dueFmt.label : '◷'}</span>
-            {item.dueDate && (
-              <button onClick={e => { e.stopPropagation(); onSetDueDate(item.id, null); }} style={{
-                position: 'relative', zIndex: 1, background: 'rgba(0,0,0,0.12)', border: 'none',
-                borderRadius: 4, width: 18, height: 18, fontSize: 13, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'inherit', padding: 0, flexShrink: 0,
-              }}>×</button>
-            )}
-            <input type="date" value={item.dueDate || ''} onChange={e => onSetDueDate(item.id, e.target.value || null)}
-              style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
-          </div>
         )}
-
-        {/* Category */}
-        <button onClick={() => onCycleCategory(item.id)} style={{
-          height: 30, borderRadius: 8, flexShrink: 0, padding: '0 10px',
-          background: color || 'var(--border)', border: 'none',
-          cursor: 'pointer', opacity: color ? 1 : 0.35,
-          display: 'flex', alignItems: 'center', gap: 5,
-        }}>
-          <span style={{ width: 7, height: 7, borderRadius: '50%', display: 'block', flexShrink: 0,
-            background: color ? 'rgba(255,255,255,0.8)' : 'var(--fg-muted)' }} />
-          <span style={{ fontSize: 11, color: color ? 'rgba(255,255,255,0.9)' : 'var(--fg-muted)', whiteSpace: 'nowrap' }}>
-            {item.category ? allCats.find(c => c.id === item.category)?.label : 'category'}
+        {catLabel && (
+          <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 20, background: color, color: '#fff', fontWeight: 600, whiteSpace: 'nowrap' }}>
+            {catLabel}
           </span>
-        </button>
-
-        {/* Delete */}
-        <button onClick={() => onDelete(item.id)} style={{
-          background: 'var(--border)', border: 'none', color: 'var(--fg-muted)',
-          fontSize: 14, cursor: 'pointer', flexShrink: 0, borderRadius: 8,
-          width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>×</button>
+        )}
       </div>
+      <button onClick={() => onEdit(item)} style={{
+        background: 'var(--border)', border: 'none', borderRadius: 7, fontSize: 11,
+        color: 'var(--fg-muted)', cursor: 'pointer', flexShrink: 0,
+        width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>✎</button>
     </div>
   );
 }
