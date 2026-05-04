@@ -12,6 +12,15 @@ function BottomSheet({ onClose, maxHeight, children }) {
   const dragRef      = React.useRef(null);
   const dismissedRef = React.useRef(false);
 
+  // Register with back-button stack on mount; clean up on unmount.
+  // If dismissed via back button the handler already ran — don't pop again.
+  // If dismissed by user (drag/backdrop/×) we need to sync history back.
+  React.useEffect(() => {
+    let dismissedByBack = false;
+    pushBackHandler(() => { dismissedByBack = true; dismiss(); });
+    return () => { if (!dismissedByBack) popBackHandler(); };
+  }, []);
+
   // Open: mount off-screen + transparent, rAF transitions to open position.
   // useLayoutEffect ensures initial styles are set before first paint.
   React.useLayoutEffect(() => {

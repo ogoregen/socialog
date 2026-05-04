@@ -64,4 +64,23 @@ function getMondayOf(date) {
   return d;
 }
 
-Object.assign(window, { load, save, uid, formatDate, today, dayName, currentDayIndex, daysDiff, getMondayOf, STORAGE_KEYS });
+// ── Panel back-button stack ───────────────────────────────────────────────────
+// Each open panel pushes a close-handler. popstate calls the topmost one.
+// Panels that close via UI (not back button) must call popBackHandler() to
+// sync the history entry they pushed.
+const __panelStack = [];
+window.addEventListener('popstate', () => {
+  const fn = __panelStack.pop();
+  if (fn) fn();
+});
+function pushBackHandler(fn) {
+  history.pushState({ panel: true }, '');
+  __panelStack.push(fn);
+}
+function popBackHandler() {
+  if (!__panelStack.length) return;
+  __panelStack.pop();
+  history.back();
+}
+
+Object.assign(window, { load, save, uid, formatDate, today, dayName, currentDayIndex, daysDiff, getMondayOf, STORAGE_KEYS, pushBackHandler, popBackHandler });

@@ -135,6 +135,7 @@
       const DRAWER_W    = 0.78; // fraction of screen width
 
       function openDrawer() {
+        if (!drawerOpen.current) pushBackHandler(closeDrawer);
         drawerOpen.current = true;
         const d = drawerRef.current, b = drawerBdRef.current;
         if (d) { d.style.transition = 'transform 0.3s cubic-bezier(0.32,0.72,0,1)'; d.style.transform = 'translateX(0)'; }
@@ -147,6 +148,12 @@
         if (b) { b.style.transition = 'opacity 0.3s ease'; b.style.opacity = '0';
           setTimeout(() => { if (b) b.style.pointerEvents = 'none'; }, 300); }
       }
+      function dismissDrawer() { popBackHandler(); closeDrawer(); }
+
+      function openProfile()    { pushBackHandler(() => setProfileOpen(false)); setProfileOpen(true); }
+      function dismissProfile() { popBackHandler(); setProfileOpen(false); }
+      function openSettings()    { pushBackHandler(() => setSettingsOpen(false)); setSettingsOpen(true); }
+      function dismissSettings() { popBackHandler(); setSettingsOpen(false); }
 
       // Edge zone: swipe-right from left edge to open drawer
       function handleEdgeStart(e) {
@@ -190,7 +197,7 @@
         if (!drawerDrag.current) return;
         const dx = e.changedTouches[0].clientX - drawerDrag.current.startX;
         drawerDrag.current = null;
-        if (dx < -(window.innerWidth * DRAWER_W * 0.3)) closeDrawer(); else openDrawer();
+        if (dx < -(window.innerWidth * DRAWER_W * 0.3)) dismissDrawer(); else openDrawer();
       }
 
       // Persist active tab + reset scroll on the newly active tab
@@ -392,7 +399,7 @@
             onTouchStart={handleEdgeStart} onTouchMove={handleEdgeMove} onTouchEnd={handleEdgeEnd} />
 
           {/* ── Drawer backdrop ── */}
-          <div ref={drawerBdRef} onClick={closeDrawer}
+          <div ref={drawerBdRef} onClick={dismissDrawer}
             style={{ position: 'fixed', inset: 0, zIndex: 215, background: 'rgba(0,0,0,0.35)', opacity: 0, pointerEvents: 'none' }} />
 
           {/* ── Drawer panel ── */}
@@ -415,10 +422,10 @@
                   fontSize="26" fontWeight="300" letterSpacing="2" fill="currentColor">socialog</text>
               </svg>
               {[
-                { icon: '◉', label: 'Profile',  action: () => setProfileOpen(true) },
-                { icon: '⚙', label: 'Settings', action: () => setSettingsOpen(true) },
+                { icon: '◉', label: 'Profile',  action: openProfile },
+                { icon: '⚙', label: 'Settings', action: openSettings },
               ].map(({ icon, label, action }) => (
-                <button key={label} onClick={() => { closeDrawer(); setTimeout(action, 320); }} style={{
+                <button key={label} onClick={() => { dismissDrawer(); setTimeout(action, 320); }} style={{
                   display: 'flex', alignItems: 'center', gap: 12,
                   width: '100%', background: 'none', border: 'none', cursor: 'pointer',
                   padding: '10px 0', color: 'var(--fg)', textAlign: 'left',
@@ -431,10 +438,10 @@
           </div>
 
           {/* ── Profile page ── */}
-          {profileOpen && <ProfilePage onBack={() => setProfileOpen(false)} />}
+          {profileOpen && <ProfilePage onBack={dismissProfile} />}
 
           {/* ── Settings page ── */}
-          {settingsOpen && <SettingsPage theme={tweaks.theme} onThemeChange={v => setTweak('theme', v)} onBack={() => setSettingsOpen(false)} />}
+          {settingsOpen && <SettingsPage theme={tweaks.theme} onThemeChange={v => setTweak('theme', v)} onBack={dismissSettings} />}
 
           {/* ── Tweaks panel ── */}
           {tweaksOpen && (
