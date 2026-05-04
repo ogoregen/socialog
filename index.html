@@ -86,7 +86,6 @@
   <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
   <script type="text/babel" src="toast.jsx"></script>
   <script type="text/babel" src="bottom-sheet.jsx"></script>
-  <script type="text/babel" src="tweaks-panel.jsx"></script>
   <script type="text/babel" src="Bookmarks.jsx"></script>
   <script type="text/babel" src="Todos.jsx"></script>
   <script type="text/babel" src="Routines.jsx"></script>
@@ -96,14 +95,6 @@
   <script type="text/babel" src="Settings.jsx"></script>
 
   <script type="text/babel">
-    // ── Tweaks defaults ───────────────────────────────────────────────────────
-    const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-      "theme": "light",
-      "accentHue": 80,
-      "fontScale": 0.95,
-      "bookmarkLayout": "list"
-    }/*EDITMODE-END*/;
-
     // ── Tab config ────────────────────────────────────────────────────────────
     const TABS = [
       { id: 'home',      label: 'Home',      icon: '◈' },
@@ -119,11 +110,7 @@
       );
       const tabRefs    = React.useRef({});
       const touchRef   = React.useRef(null);
-      const [tweaks, setTweaksState] = React.useState(() => ({
-        ...TWEAK_DEFAULTS,
-        theme: localStorage.getItem('socialog_theme') || TWEAK_DEFAULTS.theme,
-      }));
-      const [tweaksOpen, setTweaksOpen]     = React.useState(false);
+      const [theme, setThemeState] = React.useState(() => localStorage.getItem('socialog_theme') || 'light');
       const [notesOpen, setNotesOpen]       = React.useState(false);
       const [profileOpen, setProfileOpen]   = React.useState(false);
       const [settingsOpen, setSettingsOpen] = React.useState(false);
@@ -212,19 +199,10 @@
 
       // Apply theme
       React.useEffect(() => {
-        document.documentElement.setAttribute('data-theme', tweaks.theme);
-      }, [tweaks.theme]);
+        document.documentElement.setAttribute('data-theme', theme);
+      }, [theme]);
 
-      // Tweaks panel protocol
-      React.useEffect(() => {
-        function handleMsg(e) {
-          if (e.data?.type === '__activate_edit_mode')   setTweaksOpen(true);
-          if (e.data?.type === '__deactivate_edit_mode') setTweaksOpen(false);
-        }
-        window.addEventListener('message', handleMsg);
-        window.parent.postMessage({ type: '__edit_mode_available' }, '*');
-        return () => window.removeEventListener('message', handleMsg);
-      }, []);
+      function setTheme(v) { setThemeState(v); localStorage.setItem('socialog_theme', v); }
 
       function handleTouchStart(e) {
         let el = e.target;
@@ -292,15 +270,7 @@
         }
       }
 
-      function setTweak(key, val) {
-        const update = typeof key === 'object' ? key : { [key]: val };
-        setTweaksState(prev => {
-          const next = { ...prev, ...update };
-          if (next.theme) localStorage.setItem('socialog_theme', next.theme);
-          window.parent.postMessage({ type: '__edit_mode_set_keys', edits: next }, '*');
-          return next;
-        });
-      }
+
 
       // Page title maps
       const PAGE_TITLES = {
@@ -432,8 +402,8 @@
               ].map(({ icon, label, action }) => (
                 <button key={label} onClick={() => { dismissDrawer(); setTimeout(action, 320); }} style={{
                   display: 'flex', alignItems: 'center', gap: 12,
-                  width: '100%', background: 'none', border: 'none', cursor: 'pointer',
-                  padding: '10px 0', color: 'var(--fg)', textAlign: 'left',
+                  width: '100%', height: 44, background: 'none', border: 'none', cursor: 'pointer',
+                  padding: 0, color: 'var(--fg)', textAlign: 'left',
                 }}>
                   <span style={{ fontSize: 18, width: 24, textAlign: 'center', color: 'var(--fg-muted)' }}>{icon}</span>
                   <span style={{ fontSize: 15, fontWeight: 500 }}>{label}</span>
@@ -447,45 +417,7 @@
           {profileOpen && <ProfilePage onBack={dismissProfile} />}
 
           {/* ── Settings page ── */}
-          {settingsOpen && <SettingsPage theme={tweaks.theme} onThemeChange={v => setTweak('theme', v)} onBack={dismissSettings} />}
-
-          {/* ── Tweaks panel ── */}
-          {tweaksOpen && (
-            <TweaksPanel onClose={() => {
-              setTweaksOpen(false);
-              window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
-            }}>
-              <TweakSection title="Appearance">
-                <TweakRadio
-                  label="Theme"
-                  value={tweaks.theme}
-                  options={[{ value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }]}
-                  onChange={v => setTweak('theme', v)}
-                />
-                <TweakSlider
-                  label="Font scale"
-                  value={tweaks.fontScale}
-                  min={0.85} max={1.2} step={0.05}
-                  onChange={v => {
-                    setTweak('fontScale', v);
-                    document.documentElement.style.fontSize = (v * 16) + 'px';
-                  }}
-                />
-              </TweakSection>
-              <TweakSection title="Bookmarks">
-                <TweakRadio
-                  label="Layout"
-                  value={tweaks.bookmarkLayout}
-                  options={[{ value: 'grid', label: 'Grid' }, { value: 'list', label: 'List' }]}
-                  onChange={v => {
-                    setTweak('bookmarkLayout', v);
-                    window.__bookmarkLayout = v;
-                    window.dispatchEvent(new CustomEvent('bookmarkLayoutChange', { detail: v }));
-                  }}
-                />
-              </TweakSection>
-            </TweaksPanel>
-          )}
+          {settingsOpen && <SettingsPage theme={theme} onThemeChange={setTheme} onBack={dismissSettings} />}
         </div>
       );
     }
