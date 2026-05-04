@@ -1,4 +1,4 @@
-const CACHE = 'socialog-v7';
+const CACHE = 'socialog-v8';
 
 // Relative paths resolve correctly whether the app is at the root or a subpath
 // (e.g. GitHub Pages at /socialog/). Absolute paths like '/index.html' would
@@ -26,6 +26,7 @@ const CDN = [
   'https://unpkg.com/react@18.3.1/umd/react.development.js',
   'https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js',
   'https://unpkg.com/@babel/standalone@7.29.0/babel.min.js',
+  'https://unpkg.com/jszip@3.10.1/dist/jszip.min.js',
 ];
 
 self.addEventListener('install', e => {
