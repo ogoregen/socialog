@@ -462,9 +462,17 @@ function ListCard({ bm, onEdit, onDelete }) {
         }
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
           {bm.rating > 0 && <span style={{ fontSize: 11, color: '#f59e0b', letterSpacing: '-0.5px' }}>{'★'.repeat(bm.rating)}</span>}
-          <span style={{ fontSize: 11, color: 'var(--fg-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{isDone && bm.doneAt ? formatLogDate(bm.doneAt) : subtitle}</span>
-          <span style={{ fontSize: 10, color: STATUS_COLORS[bm.status], fontWeight: 600, flexShrink: 0 }}>{STATUS_LABELS[bm.status]}</span>
+          <span style={{ fontSize: 11, color: 'var(--fg-muted)' }}>{isDone && bm.doneAt ? formatLogDate(bm.doneAt) : subtitle}</span>
         </div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-end', flexShrink: 0 }}>
+        <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 20, border: '1px solid var(--border)', color: 'var(--fg-muted)', fontWeight: 600, whiteSpace: 'nowrap' }}>
+          {typeInfo.icon} {typeInfo.label}
+        </span>
+        <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 20, background: STATUS_COLORS[bm.status], color: '#fff', fontWeight: 700, whiteSpace: 'nowrap' }}>
+          {STATUS_LABELS[bm.status]}
+        </span>
       </div>
 
       <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
