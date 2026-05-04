@@ -85,6 +85,17 @@ function StreakGrid({ routines }) {
 
 // ── Main Home view ────────────────────────────────────────────────────────────
 function Home({ onNavigate, onOpenDrawer }) {
+  const [, forceUpdate] = React.useReducer(n => n + 1, 0);
+  React.useEffect(() => {
+    const refresh = () => forceUpdate();
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('socialog:data-changed', refresh);
+    return () => {
+      document.removeEventListener('visibilitychange', refresh);
+      window.removeEventListener('socialog:data-changed', refresh);
+    };
+  }, []);
+
   const todayKey = today();
   const todayIdx = currentDayIndex();
 

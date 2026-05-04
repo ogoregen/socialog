@@ -244,7 +244,17 @@ function Routines() {
   const [items, setItems] = React.useState(() => load('routines') || []);
   const [modal, setModal] = React.useState(null);
 
-  React.useEffect(() => { save('routines', items); }, [items]);
+  React.useEffect(() => {
+    save('routines', items);
+    window.dispatchEvent(new CustomEvent('socialog:data-changed'));
+  }, [items]);
+
+  // Reload on visibility change so todayKey refreshes after midnight
+  React.useEffect(() => {
+    const refresh = () => { if (document.visibilityState === 'visible') { setItems(load('routines') || []); } };
+    document.addEventListener('visibilitychange', refresh);
+    return () => document.removeEventListener('visibilitychange', refresh);
+  }, []);
 
   function handleSave(r) {
     let isNew;
