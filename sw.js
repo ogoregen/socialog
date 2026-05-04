@@ -1,4 +1,4 @@
-const CACHE = 'socialog-v9';
+const CACHE = 'socialog-v10';
 
 // Relative paths resolve correctly whether the app is at the root or a subpath
 // (e.g. GitHub Pages at /socialog/). Absolute paths like '/index.html' would
@@ -10,6 +10,7 @@ const LOCAL = [
   './toast.jsx',
   './bottom-sheet.jsx',
   './tweaks-panel.jsx',
+  './Notes.jsx',
   './Bookmarks.jsx',
   './Todos.jsx',
   './Routines.jsx',

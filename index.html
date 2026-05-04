@@ -91,6 +91,7 @@
   <script type="text/babel" src="Todos.jsx"></script>
   <script type="text/babel" src="Routines.jsx"></script>
   <script type="text/babel" src="Home.jsx"></script>
+  <script type="text/babel" src="Notes.jsx"></script>
   <script type="text/babel" src="Profile.jsx"></script>
   <script type="text/babel" src="Settings.jsx"></script>
 
@@ -123,6 +124,7 @@
         theme: localStorage.getItem('socialog_theme') || TWEAK_DEFAULTS.theme,
       }));
       const [tweaksOpen, setTweaksOpen]     = React.useState(false);
+      const [notesOpen, setNotesOpen]       = React.useState(false);
       const [profileOpen, setProfileOpen]   = React.useState(false);
       const [settingsOpen, setSettingsOpen] = React.useState(false);
 
@@ -150,6 +152,8 @@
       }
       function dismissDrawer() { popBackHandler(); closeDrawer(); }
 
+      function openNotes()      { pushBackHandler(() => setNotesOpen(false)); setNotesOpen(true); }
+      function dismissNotes()   { popBackHandler(); setNotesOpen(false); }
       function openProfile()    { pushBackHandler(() => setProfileOpen(false)); setProfileOpen(true); }
       function dismissProfile() { popBackHandler(); setProfileOpen(false); }
       function openSettings()    { pushBackHandler(() => setSettingsOpen(false)); setSettingsOpen(true); }
@@ -422,6 +426,7 @@
                   fontSize="26" fontWeight="300" letterSpacing="2" fill="currentColor">socialog</text>
               </svg>
               {[
+                { icon: '§', label: 'Notes',    action: openNotes },
                 { icon: '◉', label: 'Profile',  action: openProfile },
                 { icon: '⚙', label: 'Settings', action: openSettings },
               ].map(({ icon, label, action }) => (
@@ -438,6 +443,7 @@
           </div>
 
           {/* ── Profile page ── */}
+          {notesOpen && <NotesPage onBack={dismissNotes} />}
           {profileOpen && <ProfilePage onBack={dismissProfile} />}
 
           {/* ── Settings page ── */}

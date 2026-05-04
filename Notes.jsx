@@ -21,6 +21,13 @@ function NoteEditor({ note, onSave, onClose, onDelete }) {
     return () => clearTimeout(autoRef.current);
   }, [form.title, form.body]);
 
+  // Back button closes editor, not the whole Notes page
+  React.useEffect(() => {
+    let closedByBack = false;
+    pushBackHandler(() => { closedByBack = true; onClose(); });
+    return () => { if (!closedByBack) popBackHandler(); };
+  }, []);
+
   return (
     <div style={{
       position: 'fixed', inset: 0, background: 'var(--bg)', zIndex: 200,
@@ -177,4 +184,51 @@ function Notes() {
   );
 }
 
-Object.assign(window, { Notes });
+function NotesPage({ onBack }) {
+  const panelRef = React.useRef(null);
+
+  React.useLayoutEffect(() => {
+    const p = panelRef.current;
+    if (!p) return;
+    p.style.transform = 'translateX(100%)';
+    const id = requestAnimationFrame(() => {
+      p.style.transition = 'transform 0.32s cubic-bezier(0.32,0.72,0,1)';
+      p.style.transform  = 'translateX(0)';
+    });
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  function dismiss() {
+    const p = panelRef.current;
+    if (!p) { onBack(); return; }
+    p.style.transition = 'transform 0.32s cubic-bezier(0.32,0.72,0,1)';
+    p.style.transform  = 'translateX(100%)';
+    function onEnd(ev) {
+      if (ev.propertyName === 'transform') { p.removeEventListener('transitionend', onEnd); onBack(); }
+    }
+    p.addEventListener('transitionend', onEnd);
+  }
+
+  return ReactDOM.createPortal(
+    <div ref={panelRef} style={{
+      position: 'fixed', inset: 0, zIndex: 190,
+      background: 'var(--bg)', overflowY: 'auto',
+      paddingTop: 'env(safe-area-inset-top, 0px)',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '20px 20px 4px' }}>
+        <button onClick={dismiss} style={{
+          background: 'none', border: 'none', cursor: 'pointer',
+          color: 'var(--fg-muted)', fontSize: 20, lineHeight: 1, padding: 4,
+        }}>←</button>
+        <span style={{ fontSize: 17, fontWeight: 700, flex: 1 }}>Notes</span>
+        <button onClick={() => window.dispatchEvent(new CustomEvent('socialog:new', { detail: 'notes' }))}
+          style={{ background: 'none', border: 'none', cursor: 'pointer',
+            color: 'var(--fg-muted)', fontSize: 24, lineHeight: 1, padding: 4 }}>+</button>
+      </div>
+      <Notes />
+    </div>,
+    document.body
+  );
+}
+
+Object.assign(window, { Notes, NotesPage });
