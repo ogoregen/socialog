@@ -503,25 +503,24 @@ function GridCard({ bm, onEdit, onDelete }) {
             <img src={bm.coverUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
         )}
-        <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <span style={{ background: STATUS_COLORS[bm.status], color: '#fff', fontSize: 9, fontWeight: 700, borderRadius: 8, padding: '3px 7px' }}>
-            {STATUS_LABELS[bm.status]}
-          </span>
-          <span style={{ background: 'rgba(0,0,0,0.45)', color: '#fff', fontSize: 9, fontWeight: 600, borderRadius: 8, padding: '3px 7px' }}>
-            {typeInfo.label}
-          </span>
-        </div>
         <div style={{ padding: '10px 10px 8px' }}>
           {!bm.coverUrl && <div style={{ fontSize: 22, opacity: 0.2, marginBottom: 6, lineHeight: 1 }}>{typeInfo.icon}</div>}
           {bm.url
             ? <a href={bm.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--fg)', textDecoration: 'none' }}>{titleEl}</a>
             : titleEl}
           {bm.rating > 0 && <div style={{ fontSize: 11, color: '#f59e0b', marginBottom: 2, letterSpacing: '-0.5px' }}>{'★'.repeat(bm.rating)}</div>}
-          {subtitle && <div style={{ fontSize: 11, color: 'var(--fg-muted)' }}>{subtitle}</div>}
-        </div>
-        <div style={{ position: 'absolute', top: 6, right: 6, display: 'flex', gap: 3 }}>
-          <button onClick={() => onEdit(bm)} style={{ background: 'rgba(0,0,0,0.12)', border: 'none', borderRadius: 6, fontSize: 10, color: 'var(--fg-muted)', cursor: 'pointer', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
-          <button onClick={() => onDelete(bm.id)} style={{ background: 'rgba(0,0,0,0.12)', border: 'none', borderRadius: 6, fontSize: 12, color: 'var(--fg-muted)', cursor: 'pointer', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+          {subtitle && <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginBottom: 6 }}>{subtitle}</div>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
+            <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 8, background: STATUS_COLORS[bm.status], color: '#fff', fontWeight: 700 }}>
+              {STATUS_LABELS[bm.status]}
+            </span>
+            <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 8, background: 'var(--border)', color: 'var(--fg-muted)', fontWeight: 600 }}>
+              {typeInfo.label}
+            </span>
+            <div style={{ flex: 1 }} />
+            <button onClick={() => onEdit(bm)} style={{ background: 'none', border: 'none', borderRadius: 6, fontSize: 11, color: 'var(--fg-muted)', cursor: 'pointer', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
+            <button onClick={() => onDelete(bm.id)} style={{ background: 'none', border: 'none', borderRadius: 6, fontSize: 13, color: 'var(--fg-muted)', cursor: 'pointer', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+          </div>
         </div>
       </div>
     );
@@ -543,15 +542,14 @@ function GridCard({ bm, onEdit, onDelete }) {
           ? <img src={bm.coverUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
           : <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, opacity: 0.15 }}>{typeInfo.icon}</div>
         }
-        <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div style={{ position: 'absolute', top: 6, left: 6, right: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
           <span style={{ background: STATUS_COLORS[bm.status], color: '#fff', fontSize: 9, fontWeight: 700, borderRadius: 8, padding: '3px 7px' }}>
             {STATUS_LABELS[bm.status]}
           </span>
           <span style={{ background: 'rgba(0,0,0,0.45)', color: '#fff', fontSize: 9, fontWeight: 600, borderRadius: 8, padding: '3px 7px' }}>
             {typeInfo.label}
           </span>
-        </div>
-        <div style={{ position: 'absolute', top: 6, right: 6, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div style={{ flex: 1 }} />
           <button onClick={() => onEdit(bm)} style={{ background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: 6, fontSize: 11, color: '#fff', cursor: 'pointer', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
           <button onClick={() => onDelete(bm.id)} style={{ background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: 6, fontSize: 14, color: '#fff', cursor: 'pointer', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
         </div>
