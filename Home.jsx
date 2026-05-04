@@ -109,8 +109,8 @@ function Home({ onNavigate, onOpenDrawer }) {
   const isEmpty     = !routines.length && !hasTasks && !hasSaved;
 
   const sectionHeaderStyle = {
-    fontSize: 11, fontWeight: 600, letterSpacing: '0.08em',
-    textTransform: 'uppercase', color: 'var(--fg-muted)',
+    fontSize: 12, fontWeight: 500,
+    color: 'var(--fg-muted)',
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
     marginBottom: 10,
   };
@@ -196,7 +196,7 @@ function Home({ onNavigate, onOpenDrawer }) {
               <div key={t.id} data-tap="" onClick={() => onNavigate('todos')} style={{ ...rowStyle, opacity: t.done ? 0.5 : 1 }}>
                 <div style={{
                   width: 20, height: 20, borderRadius: 6, flexShrink: 0,
-                  border: `2px solid ${t.done ? '#22c55e' : isOverdue ? '#ef4444' : 'var(--border)'}`,
+                  border: `2px solid ${t.done ? '#22c55e' : isOverdue ? 'var(--fg-muted)' : 'var(--border)'}`,
                   background: t.done ? '#22c55e' : 'transparent',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
@@ -206,7 +206,7 @@ function Home({ onNavigate, onOpenDrawer }) {
                   {t.text}
                 </span>
                 {dueLabel && (
-                  <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 20, background: isOverdue ? '#ef4444' : 'transparent', border: isOverdue ? 'none' : '1px solid var(--border)', color: isOverdue ? '#fff' : 'var(--fg-muted)', fontWeight: 600, flexShrink: 0 }}>
+                  <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 20, background: 'transparent', border: '1px solid var(--border)', color: 'var(--fg-muted)', fontWeight: 600, flexShrink: 0 }}>
                     {dueLabel}
                   </span>
                 )}
@@ -238,8 +238,7 @@ function Home({ onNavigate, onOpenDrawer }) {
 
       {isEmpty && (
         <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--fg-muted)' }}>
-          <div style={{ fontSize: 32, marginBottom: 16, opacity: 0.2 }}>◈</div>
-          <div style={{ fontSize: 13, opacity: 0.5 }}>Nothing logged yet today</div>
+          <div style={{ fontSize: 32, opacity: 0.15 }}>◈</div>
         </div>
       )}
 

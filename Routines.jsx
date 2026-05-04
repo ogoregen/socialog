@@ -36,8 +36,8 @@ function RoutineModal({ routine, onSave, onClose }) {
     fontSize: 16, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
   };
   const labelStyle = {
-    fontSize: 11, fontWeight: 600, letterSpacing: '0.08em',
-    textTransform: 'uppercase', color: 'var(--fg-muted)', marginBottom: 4, display: 'block',
+    fontSize: 11, fontWeight: 500,
+    color: 'var(--fg-muted)', marginBottom: 4, display: 'block',
   };
 
   const TIME_OPTIONS = ['morning', 'afternoon', 'evening', 'anytime'];
@@ -224,7 +224,7 @@ function RoutineRow({ routine, onToggleToday, onEdit, onDelete }) {
       {streak > 0 && (
         <div style={{ textAlign: 'center', flexShrink: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: streak >= 7 ? '#f59e0b' : 'var(--fg)' }}>{streak}</div>
-          <div style={{ fontSize: 9, color: 'var(--fg-muted)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>streak</div>
+          <div style={{ fontSize: 9, color: 'var(--fg-muted)' }}>streak</div>
         </div>
       )}
 

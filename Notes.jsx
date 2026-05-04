@@ -170,8 +170,7 @@ function Notes() {
 
       {filtered.length === 0 && (
         <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--fg-muted)' }}>
-          <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.3 }}>§</div>
-          <div style={{ fontSize: 14 }}>No notes yet</div>
+          <div style={{ fontSize: 32, opacity: 0.15 }}>§</div>
         </div>
       )}
 

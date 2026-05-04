@@ -37,7 +37,7 @@ function formatDueDate(iso) {
 
 function duePillStyle(fmt) {
   if (!fmt)        return { background: 'transparent', color: 'var(--fg-muted)', border: '1.5px solid var(--border)' };
-  if (fmt.overdue) return { background: '#ef4444', color: '#fff', border: 'none' };
+  if (fmt.overdue) return { background: 'transparent', color: 'var(--fg-muted)', border: '1px solid var(--border)' };
   if (fmt.today)   return { background: '#f59e0b', color: '#fff', border: 'none' };
   if (fmt.soon)    return { background: '#3b82f6', color: '#fff', border: 'none' };
   return           { background: 'var(--surface)', color: 'var(--fg-muted)', border: '1.5px solid var(--border)' };
@@ -54,7 +54,7 @@ function formatDoneDate(iso) {
 }
 
 const BUCKETS = [
-  { id: 'overdue',  label: 'Overdue',    color: '#ef4444' },
+  { id: 'overdue',  label: 'Overdue',    color: 'var(--fg-muted)' },
   { id: 'today',    label: 'Today',      color: '#f59e0b' },
   { id: 'tomorrow', label: 'Tomorrow',   color: '#3b82f6' },
   { id: 'week',     label: 'This week',  color: null },
@@ -101,8 +101,8 @@ function TaskModal({ allCats, onAddCat, onSave, onClose }) {
   const pillSt = duePillStyle(dueFmt);
 
   const labelStyle = {
-    fontSize: 11, fontWeight: 600, letterSpacing: '0.08em',
-    textTransform: 'uppercase', color: 'var(--fg-muted)', marginBottom: 8, display: 'block',
+    fontSize: 11, fontWeight: 500,
+    color: 'var(--fg-muted)', marginBottom: 8, display: 'block',
   };
 
   return (
@@ -336,8 +336,7 @@ function Todos() {
       {/* Active tasks — bucketed by time */}
       {active.length === 0 && done.length === 0 && (
         <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--fg-muted)' }}>
-          <div style={{ fontSize: 32, marginBottom: 16, opacity: 0.2 }}>✓</div>
-          <div style={{ fontSize: 13, opacity: 0.5 }}>Nothing to do</div>
+          <div style={{ fontSize: 32, opacity: 0.15 }}>✓</div>
         </div>
       )}
 

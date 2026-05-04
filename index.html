@@ -281,19 +281,12 @@
         routines:  'Routines',
       };
 
-      // Pending counts
-      const todosData     = React.useMemo(() => load('todos') || [],    [tab]);
-      const routinesData  = React.useMemo(() => load('routines') || [], [tab]);
-      const pendingTodos  = todosData.filter(t => !t.done).length;
-      const todayIdx      = currentDayIndex();
-      const todayKey      = today();
-      const pendingRoutines = routinesData.filter(r =>
-        r.days.includes(todayIdx) && !(r.completions && r.completions[todayKey])
-      ).length;
+      // Overdue count only (for todos badge)
+      const todosData    = React.useMemo(() => load('todos') || [], [tab]);
+      const overdueTodos = todosData.filter(t => !t.done && t.dueDate && daysDiff(t.dueDate) < 0).length;
 
       const badges = {
-        todos:    pendingTodos,
-        routines: pendingRoutines,
+        todos: overdueTodos,
       };
 
       return (
@@ -350,9 +343,9 @@
                     {badge > 0 && (
                       <span style={{
                         position: 'absolute', top: -4, right: -8,
-                        background: '#ef4444', color: '#fff',
-                        fontSize: 9, fontWeight: 700, borderRadius: 10,
-                        padding: '1px 4px', lineHeight: 1.4,
+                        background: 'var(--fg-muted)', color: 'var(--bg)',
+                        fontSize: 9, fontWeight: 600, borderRadius: 10,
+                        padding: '1px 4px', lineHeight: 1.4, opacity: 0.7,
                       }}>{badge}</span>
                     )}
                   </span>
