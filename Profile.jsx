@@ -328,7 +328,7 @@ function ProfilePage({ onBack }) {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 12px' }}>
               {typeEntries.map(([type, count]) => (
                 <span key={type} style={{ fontSize: 12, color: 'var(--fg-muted)' }}>
-                  {count} {(type === 'book' || type === 'movie') && count !== 1 ? type + 's' : type}
+                  {count} {(type !== 'music' && type !== 'other') && count !== 1 ? type + 's' : type}
                 </span>
               ))}
             </div>
