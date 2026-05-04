@@ -84,7 +84,7 @@ function StreakGrid({ routines }) {
 }
 
 // ── Main Home view ────────────────────────────────────────────────────────────
-function Home({ onNavigate, onOpenProfile }) {
+function Home({ onNavigate, onOpenDrawer }) {
   const todayKey = today();
   const todayIdx = currentDayIndex();
 
@@ -132,7 +132,7 @@ function Home({ onNavigate, onOpenProfile }) {
   return (
     <div style={{ padding: '20px 20px 60px' }}>
 
-      {/* Date + profile button */}
+      {/* Date + drawer button */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
         <div>
           <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em' }}>
@@ -142,7 +142,7 @@ function Home({ onNavigate, onOpenProfile }) {
             {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
           </div>
         </div>
-        <button onClick={onOpenProfile} style={{
+        <button onClick={onOpenDrawer} style={{
           width: 32, height: 32, borderRadius: '50%', border: '1.5px solid var(--border)',
           background: 'var(--surface)', cursor: 'pointer', fontSize: 14, lineHeight: 1,
           display: 'flex', alignItems: 'center', justifyContent: 'center',

@@ -120,6 +120,73 @@
       const [tweaksOpen, setTweaksOpen]   = React.useState(false);
       const [profileOpen, setProfileOpen] = React.useState(false);
 
+      // ── Drawer (left nav panel) ──────────────────────────────────────────────
+      const drawerRef   = React.useRef(null);
+      const drawerBdRef = React.useRef(null);
+      const drawerOpen  = React.useRef(false);
+      const edgeDrag    = React.useRef(null);
+      const drawerDrag  = React.useRef(null);
+      const DRAWER_W    = 0.78; // fraction of screen width
+
+      function openDrawer() {
+        drawerOpen.current = true;
+        const d = drawerRef.current, b = drawerBdRef.current;
+        if (d) { d.style.transition = 'transform 0.3s cubic-bezier(0.32,0.72,0,1)'; d.style.transform = 'translateX(0)'; }
+        if (b) { b.style.transition = 'opacity 0.3s ease'; b.style.opacity = '1'; b.style.pointerEvents = 'auto'; }
+      }
+      function closeDrawer() {
+        drawerOpen.current = false;
+        const d = drawerRef.current, b = drawerBdRef.current;
+        if (d) { d.style.transition = 'transform 0.3s cubic-bezier(0.32,0.72,0,1)'; d.style.transform = 'translateX(-100%)'; }
+        if (b) { b.style.transition = 'opacity 0.3s ease'; b.style.opacity = '0';
+          setTimeout(() => { if (b) b.style.pointerEvents = 'none'; }, 300); }
+      }
+
+      // Edge zone: swipe-right from left edge to open drawer
+      function handleEdgeStart(e) {
+        if (drawerOpen.current) return;
+        edgeDrag.current = { startX: e.touches[0].clientX };
+        const d = drawerRef.current, b = drawerBdRef.current;
+        if (d) d.style.transition = 'none';
+        if (b) { b.style.transition = 'none'; b.style.pointerEvents = 'auto'; }
+      }
+      function handleEdgeMove(e) {
+        if (!edgeDrag.current) return;
+        const dx = Math.max(0, e.touches[0].clientX - edgeDrag.current.startX);
+        const pct = Math.min(dx / (window.innerWidth * DRAWER_W), 1);
+        const d = drawerRef.current, b = drawerBdRef.current;
+        if (d) d.style.transform = `translateX(${(pct - 1) * 100}%)`;
+        if (b) b.style.opacity = String(pct);
+      }
+      function handleEdgeEnd(e) {
+        if (!edgeDrag.current) return;
+        const dx = e.changedTouches[0].clientX - edgeDrag.current.startX;
+        edgeDrag.current = null;
+        if (dx > window.innerWidth * DRAWER_W * 0.3) openDrawer(); else closeDrawer();
+      }
+
+      // Drawer panel: swipe-left to close
+      function handleDrawerMoveStart(e) {
+        drawerDrag.current = { startX: e.touches[0].clientX };
+        const d = drawerRef.current, b = drawerBdRef.current;
+        if (d) d.style.transition = 'none';
+        if (b) b.style.transition = 'none';
+      }
+      function handleDrawerMove(e) {
+        if (!drawerDrag.current) return;
+        const dx = Math.min(0, e.touches[0].clientX - drawerDrag.current.startX);
+        const pct = Math.max(dx / (window.innerWidth * DRAWER_W), -1);
+        const d = drawerRef.current, b = drawerBdRef.current;
+        if (d) d.style.transform = `translateX(${pct * 100}%)`;
+        if (b) b.style.opacity = String(Math.max(0, 1 + pct));
+      }
+      function handleDrawerEnd(e) {
+        if (!drawerDrag.current) return;
+        const dx = e.changedTouches[0].clientX - drawerDrag.current.startX;
+        drawerDrag.current = null;
+        if (dx < -(window.innerWidth * DRAWER_W * 0.3)) closeDrawer(); else openDrawer();
+      }
+
       // Persist active tab + reset scroll on the newly active tab
       React.useEffect(() => {
         localStorage.setItem('socialog_tab', tab);
@@ -258,7 +325,7 @@
                   transition: 'transform 0.45s ease',
                   pointerEvents: id === tab ? 'auto' : 'none',
                 }}>
-                  {id === 'home'      && <Home onNavigate={setTab} onOpenProfile={() => setProfileOpen(true)} />}
+                  {id === 'home'      && <Home onNavigate={setTab} onOpenDrawer={openDrawer} />}
                   {id === 'bookmarks' && <Bookmarks />}
                   {id === 'todos'     && <Todos />}
                   {id === 'routines'  && <Routines />}
@@ -313,7 +380,40 @@
 
           <Toaster />
 
-          {profileOpen && <ProfilePanel onClose={() => setProfileOpen(false)} />}
+          {/* ── Left-edge swipe zone (always present, thin strip) ── */}
+          <div style={{ position: 'fixed', top: 0, left: 0, width: 20, height: '100%', zIndex: 210 }}
+            onTouchStart={handleEdgeStart} onTouchMove={handleEdgeMove} onTouchEnd={handleEdgeEnd} />
+
+          {/* ── Drawer backdrop ── */}
+          <div ref={drawerBdRef} onClick={closeDrawer}
+            style={{ position: 'fixed', inset: 0, zIndex: 215, background: 'rgba(0,0,0,0.35)', opacity: 0, pointerEvents: 'none' }} />
+
+          {/* ── Drawer panel ── */}
+          <div ref={drawerRef}
+            onTouchStart={handleDrawerMoveStart} onTouchMove={handleDrawerMove} onTouchEnd={handleDrawerEnd}
+            style={{
+              position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 220,
+              width: `${DRAWER_W * 100}%`, maxWidth: 320,
+              background: 'var(--bg)', transform: 'translateX(-100%)',
+              display: 'flex', flexDirection: 'column',
+              paddingTop: 'env(safe-area-inset-top, 0px)',
+              borderRight: '1px solid var(--border)',
+            }}>
+            <div style={{ padding: '28px 24px 16px' }}>
+              <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.01em', marginBottom: 32 }}>socialog</div>
+              <button onClick={() => { closeDrawer(); setTimeout(() => setProfileOpen(true), 320); }} style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                width: '100%', background: 'none', border: 'none', cursor: 'pointer',
+                padding: '10px 0', borderRadius: 8, color: 'var(--fg)', textAlign: 'left',
+              }}>
+                <span style={{ fontSize: 18, width: 24, textAlign: 'center', color: 'var(--fg-muted)' }}>◉</span>
+                <span style={{ fontSize: 15, fontWeight: 500 }}>Profile</span>
+              </button>
+            </div>
+          </div>
+
+          {/* ── Profile page ── */}
+          {profileOpen && <ProfilePage onBack={() => setProfileOpen(false)} />}
 
           {/* ── Tweaks panel ── */}
           {tweaksOpen && (
