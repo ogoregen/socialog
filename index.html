@@ -98,11 +98,10 @@
   <script type="text/babel">
     // ── Tab config ────────────────────────────────────────────────────────────
     const TABS = [
+      { id: 'home',      label: 'Home',      icon: '◈' },
       { id: 'routines',  label: 'Routines',  icon: '○' },
       { id: 'todos',     label: 'Tasks',     icon: '✓' },
-      { id: 'home',      label: 'Home',      icon: '◈', center: true },
-      { id: 'bookmarks', label: 'Bookmarks', icon: '▣' },
-      { id: 'library',   label: 'Library',   icon: '◉' },
+      { id: 'bookmarks', label: 'Library',   icon: '▣' },
     ];
 
     // ── App shell ─────────────────────────────────────────────────────────────
@@ -277,8 +276,7 @@
 
       // Page title maps
       const PAGE_TITLES = {
-        bookmarks: 'Bookmarks',
-        library:   'Library',
+        bookmarks: 'Library',
         todos:     'Tasks',
         routines:  'Routines',
       };
@@ -314,7 +312,6 @@
                   {id === 'bookmarks' && <Bookmarks />}
                   {id === 'todos'     && <Todos />}
                   {id === 'routines'  && <Routines />}
-                  {id === 'library'   && <div style={{ padding: '80px 20px', textAlign: 'center', color: 'var(--fg-muted)', fontSize: 32, opacity: 0.15 }}>◉</div>}
                 </div>
               );
             })}
@@ -325,33 +322,10 @@
             display: 'flex', background: 'var(--bg)', flexShrink: 0,
             borderTop: '1px solid var(--border)',
             paddingBottom: 'env(safe-area-inset-bottom, 20px)',
-            alignItems: 'flex-end',
           }}>
             {TABS.map(t => {
               const active = tab === t.id;
               const badge  = badges[t.id] || 0;
-
-              if (t.center) {
-                return (
-                  <button key={t.id} onClick={() => setTab(t.id)} style={{
-                    flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-                    justifyContent: 'flex-end', background: 'none', border: 'none',
-                    cursor: 'pointer', padding: '0 0 10px',
-                  }}>
-                    <div style={{
-                      width: 48, height: 48, borderRadius: '50%', marginBottom: 0,
-                      background: active ? 'var(--fg)' : 'var(--surface)',
-                      border: '1px solid var(--border)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 22, color: active ? 'var(--bg)' : 'var(--fg-muted)',
-                      marginTop: -20,
-                      boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-                      transition: 'all 0.15s',
-                    }}>{t.icon}</div>
-                  </button>
-                );
-              }
-
               return (
                 <button key={t.id} onClick={() => setTab(t.id)} style={{
                   flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -359,6 +333,7 @@
                   padding: '12px 0 10px', background: 'none', border: 'none',
                   cursor: 'pointer', position: 'relative',
                 }}>
+                  {/* Icon */}
                   <span style={{
                     fontSize: 20, lineHeight: 1, position: 'relative',
                     color: active ? 'var(--fg)' : 'var(--fg-muted)',
@@ -374,6 +349,7 @@
                       }}>{badge}</span>
                     )}
                   </span>
+                  {/* Label */}
                   <span style={{
                     fontSize: 10, fontWeight: active ? 600 : 400, letterSpacing: '0.04em',
                     color: active ? 'var(--fg)' : 'var(--fg-muted)', transition: 'all 0.15s',
