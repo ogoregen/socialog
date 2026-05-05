@@ -445,13 +445,13 @@ function BookmarkModal({ bm, isNew, fetchPromise, onSave, onDelete, onClose }) {
 }
 
 // ── List card ─────────────────────────────────────────────────────────────────
-function ListCard({ bm, onEdit }) {
+function ListCard({ bm, onEdit, isLast }) {
   const typeInfo = BOOKMARK_TYPES[bm.type] || BOOKMARK_TYPES.article;
   const isDone   = bm.status === 'done';
   const subtitle = bm.meta?.artist || bm.meta?.author || bm.meta?.director || bm.meta?.source || typeInfo.label;
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: isLast ? 'none' : '1px solid var(--border)' }}>
       {/* Thumbnail */}
       <div style={{ width: 44, height: 44, borderRadius: 8, flexShrink: 0, overflow: 'hidden', background: 'var(--surface)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: 'var(--fg-muted)' }}>
         {bm.coverUrl
@@ -476,7 +476,7 @@ function ListCard({ bm, onEdit }) {
         <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 20, border: '1px solid var(--border)', color: 'var(--fg-muted)', fontWeight: 600, whiteSpace: 'nowrap' }}>
           {typeInfo.label}
         </span>
-        <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 20, background: STATUS_COLORS[bm.status], color: '#fff', fontWeight: 700, whiteSpace: 'nowrap' }}>
+        <span style={{ fontSize: 8, padding: '1px 6px', borderRadius: 20, background: STATUS_COLORS[bm.status], color: '#fff', fontWeight: 700, whiteSpace: 'nowrap' }}>
           {STATUS_LABELS[bm.status]}
         </span>
       </div>
@@ -712,7 +712,7 @@ function Bookmarks() {
         </div>
       ) : (
         <div>
-          {sorted.map(bm => <ListCard key={bm.id} bm={bm} onEdit={b => setModal(b)} />)}
+          {sorted.map((bm, i) => <ListCard key={bm.id} bm={bm} onEdit={b => setModal(b)} isLast={i === sorted.length - 1} />)}
         </div>
       )}
 
