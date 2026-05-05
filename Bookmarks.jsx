@@ -1,4 +1,4 @@
-// Archive — cover grid (movie/music) + list rows (everything else), ratings, log dates
+// Library — cover grid (movie/music) + list rows (everything else), ratings, log dates
 
 const BOOKMARK_TYPES = {
   music:   { label: 'Music',   icon: '♪', fields: ['artist','genre','year'] },
@@ -346,7 +346,7 @@ function BookmarkModal({ bm, isNew, fetchPromise, onSave, onDelete, onClose }) {
           <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border)' }} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 16px' }}>
-          <span style={{ fontSize: 17, fontWeight: 600 }}>{isNew ? 'Add to archive' : 'Edit'}</span>
+          <span style={{ fontSize: 17, fontWeight: 600 }}>{isNew ? 'Add to library' : 'Edit'}</span>
           <button onClick={dismiss} style={{ background: 'none', border: 'none', fontSize: 22, color: 'var(--fg-muted)', cursor: 'pointer', lineHeight: 1, padding: 0 }}>×</button>
         </div>
 
@@ -431,7 +431,7 @@ function BookmarkModal({ bm, isNew, fetchPromise, onSave, onDelete, onClose }) {
           <button onClick={() => onSave(form)} style={{
             width: '100%', padding: '14px', borderRadius: 12, background: 'var(--fg)',
             color: 'var(--bg)', border: 'none', fontSize: 15, fontWeight: 600, cursor: 'pointer', marginTop: 4,
-          }}>{isNew ? 'Add to archive' : 'Save changes'}</button>
+          }}>{isNew ? 'Add to library' : 'Save changes'}</button>
           {!isNew && (
             <button onClick={() => { onDelete(bm.id); onClose(); }} style={{
               width: '100%', padding: '12px', borderRadius: 12, background: 'none',
@@ -618,7 +618,7 @@ function Bookmarks() {
       const next = [...prev]; next[idx] = updated; return next;
     });
     closeModal();
-    showToast(wasNew ? 'Saved to archive' : 'Updated');
+    showToast(wasNew ? 'Saved to library' : 'Updated');
   }
 
   function handleDelete(id) {

@@ -320,7 +320,7 @@ function ProfilePage({ onBack }) {
         {/* Stats */}
         <div style={sectionLabel}>Stats</div>
         <div style={row}>
-          <span style={{ fontSize: 14, color: 'var(--fg-muted)' }}>Archive saved</span>
+          <span style={{ fontSize: 14, color: 'var(--fg-muted)' }}>Library saved</span>
           <span style={{ fontSize: 16, fontWeight: 600 }}>{totalSaved}</span>
         </div>
         {typeEntries.length > 0 && (
