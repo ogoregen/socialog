@@ -114,7 +114,8 @@ function Home({ onNavigate, onOpenDrawer }) {
       `glad you're here, ${name}`,
       `nice to see you, ${name}`,
     ];
-    return opts[Math.floor(Math.random() * opts.length)];
+    const picked = opts[Math.floor(Math.random() * opts.length)];
+    return picked.charAt(0).toUpperCase() + picked.slice(1);
   }, []);
 
   const todayRoutines   = routines.filter(r => r.days.includes(todayIdx));
