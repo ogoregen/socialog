@@ -618,14 +618,14 @@ function Bookmarks() {
       const next = [...prev]; next[idx] = updated; return next;
     });
     closeModal();
-    showToast(wasNew ? 'Saved to library' : 'Updated');
+    showToast(wasNew ? 'Saved to library' : 'Bookmark updated');
   }
 
   function handleDelete(id) {
     const idx     = items.findIndex(b => b.id === id);
     const deleted = items[idx];
     setItems(prev => prev.filter(b => b.id !== id));
-    showToast('Removed', 4000, {
+    showToast('Bookmark deleted', 4000, {
       label: 'Undo',
       fn: () => setItems(prev => { const next = [...prev]; next.splice(Math.min(idx, next.length), 0, deleted); return next; }),
     });
