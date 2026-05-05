@@ -1,4 +1,4 @@
-const CACHE = 'socialog-v13';
+const CACHE = 'socialog-v14';
 
 // Relative paths resolve correctly whether the app is at the root or a subpath
 // (e.g. GitHub Pages at /socialog/). Absolute paths like '/index.html' would
