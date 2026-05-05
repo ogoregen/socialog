@@ -346,7 +346,7 @@ function Todos() {
       )}
 
       {/* Active tasks — bucketed by time */}
-      {active.length === 0 && done.length === 0 && (
+      {shownActive.length === 0 && shownDone.length === 0 && (
         <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--fg-muted)' }}>
           <div style={{ fontSize: 32, opacity: 0.15 }}>✓</div>
         </div>
