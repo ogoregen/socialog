@@ -176,7 +176,7 @@ function Home({ onNavigate, onOpenDrawer }) {
 
       {/* Greeting */}
       {greeting && (
-        <div style={{ fontSize: 17, fontWeight: 500, marginBottom: 20, marginTop: -8 }}>{greeting}</div>
+        <div style={{ fontSize: 17, fontWeight: 500, marginBottom: 20, marginTop: -8, textAlign: 'center', color: 'var(--fg-muted)' }}>{greeting}</div>
       )}
 
       {/* Streak grid — always shown if user has any routines */}
