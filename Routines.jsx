@@ -129,7 +129,7 @@ function RoutineModal({ routine, onSave, onDelete, onClose }) {
           </button>
           {routine.id && (
             <button onClick={() => { onDelete(routine.id); onClose(); }} style={{
-              width: '100%', padding: '12px', borderRadius: 12, background: 'none',
+              width: '100%', padding: '4px 12px 12px', borderRadius: 12, background: 'none',
               color: 'var(--fg-muted)', border: 'none', fontSize: 14, cursor: 'pointer', opacity: 0.5,
             }}>Delete routine</button>
           )}

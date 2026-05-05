@@ -434,7 +434,7 @@ function BookmarkModal({ bm, isNew, fetchPromise, onSave, onDelete, onClose }) {
           }}>{isNew ? 'Add to library' : 'Save changes'}</button>
           {!isNew && (
             <button onClick={() => { onDelete(bm.id); onClose(); }} style={{
-              width: '100%', padding: '12px', borderRadius: 12, background: 'none',
+              width: '100%', padding: '4px 12px 12px', borderRadius: 12, background: 'none',
               color: 'var(--fg-muted)', border: 'none', fontSize: 14, cursor: 'pointer', opacity: 0.5,
             }}>Delete</button>
           )}
