@@ -103,6 +103,20 @@ function Home({ onNavigate, onOpenDrawer }) {
   const bookmarks = load('bookmarks') || [];
   const routines  = load('routines')  || [];
 
+  const name = (load('profile') || {}).name?.trim() || '';
+  const greeting = React.useMemo(() => {
+    if (!name) return '';
+    const opts = [
+      `welcome back, ${name}`,
+      `good to see you, ${name}`,
+      `hey, ${name}`,
+      `there you are, ${name}`,
+      `glad you're here, ${name}`,
+      `nice to see you, ${name}`,
+    ];
+    return opts[Math.floor(Math.random() * opts.length)];
+  }, []);
+
   const todayRoutines   = routines.filter(r => r.days.includes(todayIdx));
   const doneRoutines    = todayRoutines.filter(r => r.completions && r.completions[todayKey]);
   const pendingRoutines = todayRoutines.filter(r => !(r.completions && r.completions[todayKey]));
@@ -150,6 +164,9 @@ function Home({ onNavigate, onOpenDrawer }) {
           fontSize: 20, color: 'var(--fg-muted)', flexShrink: 0, lineHeight: 1,
         }}>☰</button>
         <div>
+          {greeting && (
+            <div style={{ fontSize: 12, color: 'var(--fg-muted)', marginBottom: 3 }}>{greeting}</div>
+          )}
           <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em' }}>
             {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
           </div>
