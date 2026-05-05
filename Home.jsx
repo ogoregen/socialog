@@ -164,9 +164,6 @@ function Home({ onNavigate, onOpenDrawer }) {
           fontSize: 20, color: 'var(--fg-muted)', flexShrink: 0, lineHeight: 1,
         }}>☰</button>
         <div>
-          {greeting && (
-            <div style={{ fontSize: 12, color: 'var(--fg-muted)', marginBottom: 3 }}>{greeting}</div>
-          )}
           <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em' }}>
             {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
           </div>
@@ -175,6 +172,11 @@ function Home({ onNavigate, onOpenDrawer }) {
           </div>
         </div>
       </div>
+
+      {/* Greeting */}
+      {greeting && (
+        <div style={{ fontSize: 17, fontWeight: 500, marginBottom: 20, marginTop: -8 }}>{greeting}</div>
+      )}
 
       {/* Streak grid — always shown if user has any routines */}
       {routines.length > 0 && <StreakGrid routines={routines} />}
